@@ -1,7 +1,8 @@
 **UzCombinator Buildathon 2026 - AI Agent Challenge**
 
 **Date:** May 22, 2026 | Tashkent, Uzbekistan
-**Organized by: ** UzCombinator — Uzbekistan's leading startup accelerator
+
+**Organized by:** UzCombinator — Uzbekistan's leading startup accelerator
 
 **Challenge**
 
