@@ -8,10 +8,10 @@
 Build a working AI Agent that solves a real problem. You choose the problem. You choose the approach. Ship something that works.
 
 **Rules**
-• Solo or team (max 3 people)
-• You must build during the event — no pre-built projects
-• Agent must be functional and demonstrable
-• Any stack, any AI model, any framework
+1. Solo or team (max 3 people)
+2. You must build during the event — no pre-built projects
+3. Agent must be functional and demonstrable
+4. Any stack, any AI model, any framework
 
 **How to Participate**
 1. Fork this repo
@@ -20,16 +20,16 @@ Build a working AI Agent that solves a real problem. You choose the problem. You
 4. Submit your fork link via the organizer before the deadline
 
 **What to Include in Your Folder**
-• README.md — problem, solution, how to run
-• Source code
-• Demo link or video (optional but encouraged)
+1. README.md — problem, solution, how to run
+2. Source code
+3. Demo link or video (optional but encouraged)
 
 **Judging Criteria**
-• Criterion - Weight
-• Problem relevance - 30%
-• Technical execution - 30%
-• Demo quality - 20%
-• Innovation - 20%
+1. Criterion - Weight
+2. Problem relevance - 30%
+3. Technical execution - 30%
+4. Demo quality - 20%
+5. Innovation - 20%
 
 **Submission Deadline**
 24 hours | fork link to organizer via Telegram - @makhsudkhon
