@@ -11,7 +11,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from src.config import DATA_DIR, DASHBOARD_URL
+from src.config import DATA_DIR, DASHBOARD_URL, ADMIN_PASSWORD
 from src.storage import load_students, load_vacancies, get_student_assessments, get_student_interviews
 from src.career_modes import match_vacancies
 from src.db import DB_FILE, get_db_connection
@@ -40,9 +40,9 @@ app.add_middleware(
 )
 
 # ─── PYDANTIC MODELS ───
-class GoogleAuthRequest(BaseModel):
-    code: str
-    redirect_uri: str
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 class StaffCreateRequest(BaseModel):
     email: str
@@ -65,58 +65,82 @@ class ScheduleInterviewRequest(BaseModel):
 
 # ─── AUTH ENDPOINTS ───
 
-@app.post("/auth/google")
+@app.post("/auth/login")
 @limiter.limit("10/minute")
-async def auth_google(request: Request, body: GoogleAuthRequest, response: Response):
-    """Exchange Google Auth Code for JWT and set cookies."""
-    try:
-        if body.code and body.code.startswith("mock_code_"):
-            email = body.code.replace("mock_code_", "").strip().lower()
-            google_user = {
-                "email": email,
-                "name": email.split("@")[0].capitalize(),
-                "sub": f"mock_sub_{email}",
-                "picture": None,
-                "email_verified": True
-            }
-        else:
-            google_user = await exchange_google_code(body.code, body.redirect_uri)
-            
-        staff = validate_staff_login(google_user)
+async def auth_login(request: Request, body: LoginRequest, response: Response):
+    """Log in allowlisted staff using email and password."""
+    email = body.email.strip().lower()
+    password = body.password
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
         
-        # Issue tokens
-        access_token = create_access_token(
-            staff_id=staff["id"],
-            email=staff["email"],
-            role=staff["role"],
-            department=staff["department"]
-        )
-        refresh_token, _ = create_refresh_token(staff["id"])
-        
-        # Set cookies
-        set_auth_cookies(response, access_token, refresh_token)
-        
-        # Audit log
-        audit_log(
-            actor_type="staff",
-            actor_id=str(staff["id"]),
-            action="login",
-            ip_address=request.client.host if request.client else None,
-            user_agent=request.headers.get("user-agent", "")[:200]
+    # Check password first
+    if password != ADMIN_PASSWORD:
+        audit_log("system", email, "failed_login", details="Incorrect password")
+        raise HTTPException(
+            status_code=401,
+            detail="Noto'g'ri parol. / Incorrect password."
         )
         
-        return {
-            "id": staff["id"],
-            "email": staff["email"],
-            "name": staff["name"],
-            "role": staff["role"],
-            "department": staff["department"],
-            "avatar_url": staff.get("avatar_url")
-        }
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if email matches
+    cursor.execute("SELECT * FROM staff_users WHERE LOWER(email) = ?;", (email,))
+    staff = cursor.fetchone()
+    
+    if not staff:
+        conn.close()
+        audit_log("system", email, "failed_login", details="Email not in allowlist")
+        raise HTTPException(
+            status_code=403,
+            detail="Kirish taqiqlandi. Sizning emailingiz ro'yxatdan o'tmagan. / Access denied. Your email is not allowlisted."
+        )
+        
+    if not staff["is_active"]:
+        conn.close()
+        audit_log("system", email, "failed_login", details="Account deactivated")
+        raise HTTPException(status_code=403, detail="Hisob faolsizlantirilgan. / Account deactivated.")
+        
+    # Update last_login
+    from datetime import datetime, timezone
+    cursor.execute(
+        "UPDATE staff_users SET last_login = ? WHERE id = ?;",
+        (datetime.now(timezone.utc).isoformat(), staff["id"])
+    )
+    conn.commit()
+    conn.close()
+    
+    # Issue tokens
+    access_token = create_access_token(
+        staff_id=staff["id"],
+        email=staff["email"],
+        role=staff["role"],
+        department=staff["department"]
+    )
+    refresh_token, _ = create_refresh_token(staff["id"])
+    
+    # Set cookies
+    set_auth_cookies(response, access_token, refresh_token)
+    
+    # Audit log
+    audit_log(
+        actor_type="staff",
+        actor_id=str(staff["id"]),
+        action="login",
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent", "")[:200]
+    )
+    
+    staff_dict = dict(staff)
+    return {
+        "id": staff_dict["id"],
+        "email": staff_dict["email"],
+        "name": staff_dict["name"],
+        "role": staff_dict["role"],
+        "department": staff_dict["department"],
+        "avatar_url": staff_dict.get("avatar_url")
+    }
 
 
 @app.post("/auth/refresh")
@@ -195,10 +219,7 @@ async def auth_me(staff: dict = Depends(get_current_staff)):
     }
 
 
-@app.get("/auth/config")
-def get_auth_config():
-    from src.config import GOOGLE_CLIENT_ID
-    return {"google_client_id": GOOGLE_CLIENT_ID}
+# Google Auth Config endpoint removed as Google Auth is deactivated.
 
 
 # ─── API ENDPOINTS ───
