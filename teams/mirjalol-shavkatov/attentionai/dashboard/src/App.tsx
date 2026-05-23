@@ -22,6 +22,113 @@ import {
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
+const DASHBOARD_TRANSLATIONS = {
+  uz: {
+    title: "PDP University Karyera Markazi",
+    subtitle: "Karyera Markazi",
+    overview: "Boshqaruv paneli",
+    studentMap: "Talabalar xaritasi",
+    vacancyMatch: "Vakansiya saralovchi",
+    deficitAnalyzer: "O'quv rejasi tahlilchisi",
+    telemetrySafety: "Telemetriya va xavfsizlik",
+    staffAllowlist: "Xodimlar ro'yxati",
+    auditLogs: "Audit jurnali",
+    systemStatus: "Tizim holati",
+    live: "Faol",
+    syncData: "Sinxronlash",
+    light: "Yorug'lik",
+    dark: "Qorong'ulik",
+    welcomeTitle: "Campus Career Copilot",
+    welcomeDesc: "PDP University karyera markazi portali. Ruxsat etilgan xodimlar Google akkaunti orqali kiring.",
+    signInGoogle: "Google orqali kirish",
+    or: "YOKI",
+    sandboxMode: "Sandbox demo rejimi (API offline)",
+    devBypassTitle: "Dasturchi bypassi (API va MB orqali)",
+    devBypassButton: "Bypass email orqali kirish",
+    recentTalent: "Yaqinda faol bo'lgan talabalar",
+    recentTalentDesc: "Tasdiqlangan yutuqlarga ega eng yaxshi ishga tayyor talabalar",
+    viewAll: "Barchasini ko'rish",
+    tableName: "Ism",
+    tableRole: "Maqsadli lavozim",
+    tableSkills: "Tasdiqlangan ko'nikmalar",
+    tableReadiness: "Tayyorlik darajasi",
+    tableAction: "Harakat",
+    tableDetails: "Batafsil",
+    safetyCompliance: "AI Agent xavfsizligi va muvofiqligi",
+    guardrailCompliance: "Xavfsizlik talablariga rioya etish darajasi",
+    guardrailFailures: "Faollashgan himoya ogohlantirishlari",
+    noGuardrailHits: "Hech qanday xavfsizlik ogohlantirishi qayd etilmadi.",
+    sessionHealth: "Faol sessiyalar salomatligi",
+    totalSessions: "Jami sessiyalar",
+    tokensUsed: "Ishlatilgan LLM tokenlari",
+    notSpecified: "Ko'rsatilmagan",
+    noVerifiedSkills: "Tasdiqlangan ko'nikmalar yo'q",
+    profileIncomplete: "Profil to'liq emas",
+    totalStudents: "Jami talabalar",
+    activeSeekers: "Faol ish qidiruvchilar",
+    avgResponseTime: "O'rtacha AI tezligi",
+    safetyFlags: "Xavfsizlik ogohlantirishlari",
+    registeredViaBot: "Telegram bot orqali ro'yxatdan o'tganlar",
+    hasTargetRole: "Maqsadli lavozimi aniqlanganlar",
+    latencyDesc: "AI agentining o'rtacha javob berish tezligi",
+    guardrailDesc: "Tizim tomonidan to'xtatilgan xavfli so'rovlar",
+    marketTrends: "Mehnat bozori trendlari (Top ko'nikmalar)",
+    marketTrendsDesc: "Hamkor vakansiyalarida eng ko'p talab qilinayotgan texnologiyalar"
+  },
+  en: {
+    title: "PDP University Career Center",
+    subtitle: "Career Center",
+    overview: "Overview",
+    studentMap: "Student Skill Map",
+    vacancyMatch: "Vacancy Matchmaker",
+    deficitAnalyzer: "Curriculum Deficit Analyzer",
+    telemetrySafety: "Telemetry & Safety",
+    staffAllowlist: "Staff Allowlist",
+    auditLogs: "Audit Logs",
+    systemStatus: "System Status",
+    live: "Live",
+    syncData: "Sync Data",
+    light: "Light",
+    dark: "Dark",
+    welcomeTitle: "Campus Career Copilot",
+    welcomeDesc: "PDP University Career Center portal. Sign in with your approved staff Google account.",
+    signInGoogle: "Sign in with Google",
+    or: "OR",
+    sandboxMode: "Enter Sandbox Demo Mode (API Offline)",
+    devBypassTitle: "Developer Bypass (Real API + DB Auth)",
+    devBypassButton: "Log In with Bypass Email",
+    recentTalent: "Recent Active Talent Profiles",
+    recentTalentDesc: "Top job-ready students based on verified achievements",
+    viewAll: "View All",
+    tableName: "Name",
+    tableRole: "Target Role",
+    tableSkills: "Verified Skills",
+    tableReadiness: "Readiness Score",
+    tableAction: "Action",
+    tableDetails: "Details",
+    safetyCompliance: "Harness Safety Compliance",
+    guardrailCompliance: "Guardrail Compliance Rate",
+    guardrailFailures: "Guardrail Failures Count",
+    noGuardrailHits: "No guardrail interventions recorded.",
+    sessionHealth: "Active Session Health",
+    totalSessions: "Total Sessions",
+    tokensUsed: "LLM Tokens Used",
+    notSpecified: "Not Specified",
+    noVerifiedSkills: "No verified skills",
+    profileIncomplete: "Profile Incomplete",
+    totalStudents: "Registered Students",
+    activeSeekers: "Active Seekers",
+    avgResponseTime: "Avg Response Time",
+    safetyFlags: "Safety Flags",
+    registeredViaBot: "Registered via Telegram bot",
+    hasTargetRole: "Profile has Target Role defined",
+    latencyDesc: "Latency of Agent reasoning steps",
+    guardrailDesc: "Guardrail events flagged by agent",
+    marketTrends: "Labor Market Trends (Top Skills)",
+    marketTrendsDesc: "Top technologies requested in partner vacancies"
+  }
+};
+
 interface Profile {
   id: number;
   telegram_id: string;
@@ -109,6 +216,14 @@ function App() {
     (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
   );
   const [learningPlanText, setLearningPlanText] = useState<string | null>(null);
+  const [dashboardLanguage, setDashboardLanguage] = useState<'uz' | 'en'>(
+    (localStorage.getItem('dashboardLanguage') as 'uz' | 'en') || 'uz'
+  );
+
+  const dt = (key: string): string => {
+    const section = (DASHBOARD_TRANSLATIONS as any)[dashboardLanguage];
+    return section?.[key] || (DASHBOARD_TRANSLATIONS.uz as any)[key] || key;
+  };
 
   // Allowlist & Auditing management states
   const [staffUsers, setStaffUsers] = useState<any[]>([]);
@@ -842,7 +957,9 @@ function App() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', backgroundColor: 'var(--bg-main)' }}>
         <div className="spinner" style={{ marginBottom: '16px' }}></div>
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-display)', fontSize: '16px' }}>Checking secure session...</p>
+        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-display)', fontSize: '16px' }}>
+          {dashboardLanguage === 'uz' ? 'Xavfsiz sessiya tekshirilmoqda...' : 'Checking secure session...'}
+        </p>
       </div>
     );
   }
@@ -898,7 +1015,7 @@ function App() {
             margin: '0 0 8px 0',
             letterSpacing: '-0.02em'
           }}>
-            Campus Career Copilot
+            {dt('welcomeTitle')}
           </h2>
           
           <p style={{
@@ -907,7 +1024,7 @@ function App() {
             margin: '0 0 32px 0',
             lineHeight: '1.5'
           }}>
-            PDP University Career Center portal. Sign in with your approved staff Google account.
+            {dt('welcomeDesc')}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -947,7 +1064,7 @@ function App() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              Sign in with Google
+              {dt('signInGoogle')}
             </button>
 
             <div style={{
@@ -958,7 +1075,7 @@ function App() {
               fontSize: '12px'
             }}>
               <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-              <span style={{ padding: '0 12px' }}>OR</span>
+              <span style={{ padding: '0 12px' }}>{dt('or')}</span>
               <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
             </div>
 
@@ -988,7 +1105,7 @@ function App() {
                 marginBottom: '16px'
               }}
             >
-              Enter Sandbox Demo Mode (API Offline)
+              {dt('sandboxMode')}
             </button>
 
             {/* Developer Bypass Option */}
@@ -1003,11 +1120,11 @@ function App() {
               textAlign: 'left'
             }}>
               <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Developer Bypass (Real API + DB Auth)
+                {dt('devBypassTitle')}
               </span>
               <input
                 type="email"
-                placeholder="Enter approved email (e.g. mirjalol0331@gmail.com)"
+                placeholder={dashboardLanguage === 'uz' ? "Tasdiqlangan emailni kiriting (masalan: mirjalol0331@gmail.com)" : "Enter approved email (e.g. mirjalol0331@gmail.com)"}
                 id="bypass-email-input"
                 className="form-input"
                 defaultValue="mirjalol0331@gmail.com"
@@ -1022,14 +1139,49 @@ function App() {
                 className="btn btn-primary"
                 style={{ fontSize: '13px', padding: '8px 16px', cursor: 'pointer', width: '100%' }}
               >
-                Log In with Bypass Email
+                {dt('devBypassButton')}
               </button>
             </div>
           </div>
         </div>
+
+        {/* Global Language Toggle Switch on Login Screen */}
+        <div style={{ position: 'absolute', bottom: '20px', display: 'flex', gap: '8px', zIndex: 10 }}>
+          <button 
+            onClick={() => { setDashboardLanguage('uz'); localStorage.setItem('dashboardLanguage', 'uz'); }} 
+            className={`btn btn-outline ${dashboardLanguage === 'uz' ? 'btn-primary' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+          >
+            O'zbekcha
+          </button>
+          <button 
+            onClick={() => { setDashboardLanguage('en'); localStorage.setItem('dashboardLanguage', 'en'); }} 
+            className={`btn btn-outline ${dashboardLanguage === 'en' ? 'btn-primary' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+          >
+            English
+          </button>
+        </div>
       </div>
     );
   }
+
+  // Helper to extract top trending skills from vacancies
+  const getTrendingSkills = () => {
+    const counts: { [key: string]: number } = {};
+    vacancies.forEach(v => {
+      if (v.skills_required) {
+        v.skills_required.forEach(skill => {
+          const s = skill.trim();
+          counts[s] = (counts[s] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(counts)
+      .map(([skill, count]) => ({ skill, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  };
 
   return (
     <div className="app-container">
@@ -1039,7 +1191,7 @@ function App() {
           <div className="logo-icon">PDP</div>
           <div className="logo-text">
             <h1>PDP University</h1>
-            <p>Career Center</p>
+            <p>{dt('subtitle')}</p>
           </div>
         </div>
 
@@ -1049,7 +1201,7 @@ function App() {
             onClick={() => setActiveTab('overview')}
           >
             <LayoutDashboard size={18} />
-            Overview
+            {dt('overview')}
           </button>
           {['super_admin', 'career_staff', 'viewer'].includes(user?.role) && (
             <button 
@@ -1057,7 +1209,7 @@ function App() {
               onClick={() => setActiveTab('students')}
             >
               <Users size={18} />
-              Student Skill Map
+              {dt('studentMap')}
             </button>
           )}
           {['super_admin', 'career_staff', 'viewer'].includes(user?.role) && (
@@ -1066,7 +1218,7 @@ function App() {
               onClick={() => setActiveTab('vacancies')}
             >
               <Briefcase size={18} />
-              Vacancy Matchmaker
+              {dt('vacancyMatch')}
             </button>
           )}
           {['super_admin', 'career_staff'].includes(user?.role) && (
@@ -1075,7 +1227,7 @@ function App() {
               onClick={() => setActiveTab('weak-areas')}
             >
               <TrendingDown size={18} />
-              Curriculum Deficit Analyzer
+              {dt('deficitAnalyzer')}
             </button>
           )}
           {user?.role === 'super_admin' && (
@@ -1084,7 +1236,7 @@ function App() {
               onClick={() => setActiveTab('telemetry')}
             >
               <Activity size={18} />
-              Telemetry & Safety
+              {dt('telemetrySafety')}
             </button>
           )}
           {user?.role === 'super_admin' && (
@@ -1093,7 +1245,7 @@ function App() {
               onClick={() => setActiveTab('staff-mgmt')}
             >
               <Shield size={18} />
-              Staff Allowlist
+              {dt('staffAllowlist')}
             </button>
           )}
           {user?.role === 'super_admin' && (
@@ -1102,7 +1254,7 @@ function App() {
               onClick={() => setActiveTab('audit-logs')}
             >
               <ClipboardList size={18} />
-              Audit Logs
+              {dt('auditLogs')}
             </button>
           )}
         </nav>
@@ -1146,19 +1298,19 @@ function App() {
             </div>
           )}
           <div className="flex-between">
-            <span>System Status</span>
+            <span>{dt('systemStatus')}</span>
             <span className="status-badge">
               <span className="pulse-dot"></span>
-              Live
+              {dt('live')}
             </span>
           </div>
           {isDemoMode ? (
             <div className="badge badge-warning" style={{ justifyContent: 'center', width: '100%', padding: '6px' }}>
-              ⚠️ Demo Mode (API Offline)
+              {dashboardLanguage === 'uz' ? '⚠️ Demo Rejim (API Offline)' : '⚠️ Demo Mode (API Offline)'}
             </div>
           ) : (
             <div className="badge badge-success" style={{ justifyContent: 'center', width: '100%', padding: '6px' }}>
-              Connected to API
+              {dashboardLanguage === 'uz' ? 'API-ga ulandi' : 'Connected to API'}
             </div>
           )}
           <button 
@@ -1168,7 +1320,7 @@ function App() {
             disabled={loading}
           >
             <RefreshCw size={12} className={loading ? 'spin-animation' : ''} />
-            Sync Data
+            {dt('syncData')}
           </button>
           
           <div className="theme-switch-container">
@@ -1178,7 +1330,7 @@ function App() {
               title="Light Theme"
             >
               <Sun size={14} />
-              <span>Light</span>
+              <span>{dt('light')}</span>
             </button>
             <button 
               onClick={() => setTheme('dark')} 
@@ -1186,7 +1338,31 @@ function App() {
               title="Dark Theme"
             >
               <Moon size={14} />
-              <span>Dark</span>
+              <span>{dt('dark')}</span>
+            </button>
+          </div>
+
+          {/* Sidebar Language switcher */}
+          <div className="theme-switch-container" style={{ marginTop: '4px' }}>
+            <button 
+              onClick={() => {
+                setDashboardLanguage('uz');
+                localStorage.setItem('dashboardLanguage', 'uz');
+              }} 
+              className={`theme-switch-btn ${dashboardLanguage === 'uz' ? 'active' : ''}`}
+              title="O'zbek tili"
+            >
+              <span>UZB</span>
+            </button>
+            <button 
+              onClick={() => {
+                setDashboardLanguage('en');
+                localStorage.setItem('dashboardLanguage', 'en');
+              }} 
+              className={`theme-switch-btn ${dashboardLanguage === 'en' ? 'active' : ''}`}
+              title="English"
+            >
+              <span>ENG</span>
             </button>
           </div>
         </div>
@@ -1199,22 +1375,22 @@ function App() {
         <header className="page-header">
           <div className="header-title">
             <h2>
-              {activeTab === 'overview' && 'Dashboard Overview'}
-              {activeTab === 'students' && 'Student Skill Directory'}
-              {activeTab === 'vacancies' && 'Vacancy AI Matchmaker'}
-              {activeTab === 'weak-areas' && 'Curriculum Deficit Analyzer'}
-              {activeTab === 'telemetry' && 'Agent Logs & Telemetry'}
-              {activeTab === 'staff-mgmt' && 'Staff Directory & Allowlist'}
-              {activeTab === 'audit-logs' && 'Security Audit Trails'}
+              {activeTab === 'overview' && dt('overview')}
+              {activeTab === 'students' && dt('studentMap')}
+              {activeTab === 'vacancies' && dt('vacancyMatch')}
+              {activeTab === 'weak-areas' && dt('deficitAnalyzer')}
+              {activeTab === 'telemetry' && dt('telemetrySafety')}
+              {activeTab === 'staff-mgmt' && dt('staffAllowlist')}
+              {activeTab === 'audit-logs' && dt('auditLogs')}
             </h2>
             <p>
-              {activeTab === 'overview' && 'Real-time performance metrics and career development insights.'}
-              {activeTab === 'students' && 'Track student verified skills, target roles, and readiness scores.'}
-              {activeTab === 'vacancies' && 'Perform RAG-driven matches between student profiles and vacancies.'}
-              {activeTab === 'weak-areas' && 'Identify critical skill gaps and curricular weakness areas.'}
-              {activeTab === 'telemetry' && 'Verify agent security, guardrails compliance, and latency metrics.'}
-              {activeTab === 'staff-mgmt' && 'Manage authorized staff emails, roles, and department access control.'}
-              {activeTab === 'audit-logs' && 'View access and administrative action logs for compliance and security.'}
+              {activeTab === 'overview' && (dashboardLanguage === 'uz' ? 'Real vaqtdagi samaradorlik va karyerani rivojlantirish ko\'rsatkichlari.' : 'Real-time performance metrics and career development insights.')}
+              {activeTab === 'students' && (dashboardLanguage === 'uz' ? 'Talabalarning tasdiqlangan ko\'nikmalari, maqsadlari va tayyorlik darajalarini kuzatish.' : 'Track student verified skills, target roles, and readiness scores.')}
+              {activeTab === 'vacancies' && (dashboardLanguage === 'uz' ? 'Talabalar va hamkor vakansiyalari o\'rtasida sun\'iy intellektga asoslangan moslashtirish.' : 'Perform RAG-driven matches between student profiles and vacancies.')}
+              {activeTab === 'weak-areas' && (dashboardLanguage === 'uz' ? 'Talaba profillaridan kelib chiqqan holda, o\'quv dasturidagi kamchiliklarni aniqlash.' : 'Identify critical skill gaps and curricular weakness areas.')}
+              {activeTab === 'telemetry' && (dashboardLanguage === 'uz' ? 'Agent jurnallari, tezlik ko\'rsatkichlari va xavfsizlik holati.' : 'Verify agent security, guardrails compliance, and latency metrics.')}
+              {activeTab === 'staff-mgmt' && (dashboardLanguage === 'uz' ? 'Tizimdan foydalanish huquqiga ega xodimlar va ularning rollarini boshqarish.' : 'Manage authorized staff emails, roles, and department access control.')}
+              {activeTab === 'audit-logs' && (dashboardLanguage === 'uz' ? 'Tizimdagi barcha ma\'muriy harakatlar jurnali.' : 'View access and administrative action logs for compliance and security.')}
             </p>
           </div>
           <div className="flex-row-gap">
@@ -1232,38 +1408,38 @@ function App() {
             <section className="metrics-grid">
               <div className="metric-card">
                 <div className="metric-header">
-                  <span className="metric-title">Registered Students</span>
+                  <span className="metric-title">{dt('totalStudents')}</span>
                   <div className="metric-icon-wrapper"><Users size={16} /></div>
                 </div>
                 <h3 className="metric-value">{stats.total_students}</h3>
-                <p className="metric-desc">Registered via Telegram bot</p>
+                <p className="metric-desc">{dt('registeredViaBot')}</p>
               </div>
 
               <div className="metric-card success-border">
                 <div className="metric-header">
-                  <span className="metric-title">Active Seekers</span>
+                  <span className="metric-title">{dt('activeSeekers')}</span>
                   <div className="metric-icon-wrapper"><Briefcase size={16} /></div>
                 </div>
                 <h3 className="metric-value">{stats.active_seekers}</h3>
-                <p className="metric-desc">Profile has Target Role defined</p>
+                <p className="metric-desc">{dt('hasTargetRole')}</p>
               </div>
 
               <div className="metric-card warning-border">
                 <div className="metric-header">
-                  <span className="metric-title">Avg Response Time</span>
+                  <span className="metric-title">{dt('avgResponseTime')}</span>
                   <div className="metric-icon-wrapper"><Clock size={16} /></div>
                 </div>
                 <h3 className="metric-value">{stats.avg_latency_sec}s</h3>
-                <p className="metric-desc">Latency of Agent reasoning steps</p>
+                <p className="metric-desc">{dt('latencyDesc')}</p>
               </div>
 
               <div className="metric-card danger-border">
                 <div className="metric-header">
-                  <span className="metric-title">Safety Flags</span>
+                  <span className="metric-title">{dt('safetyFlags')}</span>
                   <div className="metric-icon-wrapper"><ShieldAlert size={16} /></div>
                 </div>
                 <h3 className="metric-value">{stats.critical_risks}</h3>
-                <p className="metric-desc">Guardrail events flagged by agent</p>
+                <p className="metric-desc">{dt('guardrailDesc')}</p>
               </div>
             </section>
 
@@ -1274,11 +1450,11 @@ function App() {
                 <div className="card">
                   <div className="card-header">
                     <div>
-                      <h3>Recent Active Talent Profiles</h3>
-                      <p>Top job-ready students based on verified achievements</p>
+                      <h3>{dt('recentTalent')}</h3>
+                      <p>{dt('recentTalentDesc')}</p>
                     </div>
                     <button onClick={() => setActiveTab('students')} className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px' }}>
-                      View All
+                      {dt('viewAll')}
                     </button>
                   </div>
                   
@@ -1286,18 +1462,18 @@ function App() {
                     <table className="custom-table">
                       <thead>
                         <tr>
-                          <th>Name</th>
-                          <th>Target Role</th>
-                          <th>Verified Skills</th>
-                          <th>Readiness Score</th>
-                          <th>Action</th>
+                          <th>{dt('tableName')}</th>
+                          <th>{dt('tableRole')}</th>
+                          <th>{dt('tableSkills')}</th>
+                          <th>{dt('tableReadiness')}</th>
+                          <th>{dt('tableAction')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {students.slice(0, 5).map(student => (
                           <tr key={student.telegram_id}>
                             <td style={{ fontWeight: '600' }}>{student.name}</td>
-                            <td>{student.target_role || <span style={{ color: 'var(--text-muted)' }}>Not Specified</span>}</td>
+                            <td>{student.target_role || <span style={{ color: 'var(--text-muted)' }}>{dt('notSpecified')}</span>}</td>
                             <td>
                               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                                 {student.verified_skills.slice(0, 2).map(skill => (
@@ -1307,18 +1483,18 @@ function App() {
                                   <span className="badge badge-primary">+{student.verified_skills.length - 2}</span>
                                 )}
                                 {student.verified_skills.length === 0 && (
-                                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No verified skills</span>
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{dt('noVerifiedSkills')}</span>
                                 )}
                               </div>
                             </td>
                             <td>
                               <span className={`badge ${getReadinessColor(student.readiness_score)}`}>
-                                {(student.readiness_score === 0 || student.readiness_score === null || student.readiness_score === undefined) ? 'Profile Incomplete' : `${student.readiness_score}%`}
+                                {(student.readiness_score === 0 || student.readiness_score === null || student.readiness_score === undefined) ? dt('profileIncomplete') : `${student.readiness_score}%`}
                               </span>
                             </td>
                             <td>
                               <button onClick={() => handleViewStudentDetail(student.telegram_id)} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px' }}>
-                                Details
+                                {dt('tableDetails')}
                               </button>
                             </td>
                           </tr>
@@ -1332,14 +1508,14 @@ function App() {
                 <div className="card">
                   <div className="card-header">
                     <div>
-                      <h3>Harness Safety Compliance</h3>
-                      <p>Guardrail actions & self-corrections</p>
+                      <h3>{dt('safetyCompliance')}</h3>
+                      <p>{dashboardLanguage === 'uz' ? 'Xavfsizlik qoidalari va avtomatik tuzatishlar' : 'Guardrail actions & self-corrections'}</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--bg-main)' }}>
                       <div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Guardrail Compliance Rate</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{dt('guardrailCompliance')}</div>
                         <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--success)' }}>
                           {stats.total_agent_turns > 0 ? (Math.round((1 - (stats.guardrail_hits / stats.total_agent_turns)) * 100)) : 100}%
                         </div>
@@ -1350,30 +1526,75 @@ function App() {
                     </div>
 
                     <div>
-                      <h4 style={{ margin: '0 0 10px 0', fontSize: '13px' }}>Guardrail Failures Count</h4>
+                      <h4 style={{ margin: '0 0 10px 0', fontSize: '13px' }}>{dt('guardrailFailures')}</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {Object.entries(telemetry.guardrail_stats).map(([status, cnt]) => (
                           <div key={status} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                             <span style={{ color: 'var(--text-muted)' }}>{status}</span>
-                            <span className="badge badge-danger">{cnt} times</span>
+                            <span className="badge badge-danger">{cnt} {dashboardLanguage === 'uz' ? 'marta' : 'times'}</span>
                           </div>
                         ))}
                         {Object.keys(telemetry.guardrail_stats).length === 0 && (
-                          <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No guardrail interventions recorded.</div>
+                          <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{dt('noGuardrailHits')}</div>
                         )}
                       </div>
                     </div>
 
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
-                      <h4 style={{ margin: '0 0 10px 0', fontSize: '13px' }}>Active Session Health</h4>
+                      <h4 style={{ margin: '0 0 10px 0', fontSize: '13px' }}>{dt('sessionHealth')}</h4>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>Total Sessions</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{dt('totalSessions')}</span>
                         <span>{stats.active_sessions}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '6px' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>LLM Tokens Used</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{dt('tokensUsed')}</span>
                         <span>{stats.total_tokens_exchanged.toLocaleString()}</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Third Card: Labor Market Trends Widget */}
+                <div className="card" style={{ gridColumn: 'span 2' }}>
+                  <div className="card-header">
+                    <div>
+                      <h3>{dt('marketTrends')}</h3>
+                      <p>{dt('marketTrendsDesc')}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'center' }}>
+                    {/* Bar Chart */}
+                    <div>
+                      <div className="custom-bar-chart" style={{ height: '160px' }}>
+                        {getTrendingSkills().map((item) => {
+                          const maxVal = Math.max(...getTrendingSkills().map(s => s.count), 1);
+                          const pct = (item.count / maxVal) * 80 + 10; // scale between 10% and 90%
+                          return (
+                            <div key={item.skill} className="bar-wrapper">
+                              <div 
+                                className="bar-column primary-bar" 
+                                style={{ height: `${pct}%` }}
+                                title={`${item.count} vacancies`}
+                              ></div>
+                              <span className="bar-label">{item.skill}</span>
+                            </div>
+                          );
+                        })}
+                        {getTrendingSkills().length === 0 && (
+                          <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No active vacancy skill data.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Summary text list */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {getTrendingSkills().map((item, idx) => (
+                        <div key={item.skill} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                          <span style={{ fontWeight: '600' }}>{idx + 1}. {item.skill}</span>
+                          <span className="badge badge-accent">{item.count} {dashboardLanguage === 'uz' ? 'ta vakansiya' : 'vacancies'}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1385,8 +1606,8 @@ function App() {
               <div className="card">
                 <div className="card-header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
                   <div>
-                    <h3>Talent Pool Skill Map</h3>
-                    <p>Search students, filter target roles, and drill down on assessment performance</p>
+                    <h3>{dt('talentPoolTitle')}</h3>
+                    <p>{dt('talentPoolDesc')}</p>
                   </div>
                 </div>
 
@@ -1396,7 +1617,7 @@ function App() {
                     <div className="search-input-wrapper">
                       <input 
                         type="text" 
-                        placeholder="Search student name, role or university..."
+                        placeholder={dt('searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="form-input"
@@ -1409,7 +1630,7 @@ function App() {
                       value={roleFilter}
                       onChange={(e) => setRoleFilter(e.target.value)}
                     >
-                      <option value="All">All Roles</option>
+                      <option value="All">{dt('allRoles')}</option>
                       {uniqueRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
                       ))}
@@ -1421,10 +1642,10 @@ function App() {
                       value={readinessFilter}
                       onChange={(e) => setReadinessFilter(e.target.value)}
                     >
-                      <option value="All">All Readiness Scores</option>
-                      <option value="High">High Readiness (&gt;= 80%)</option>
-                      <option value="Medium">Medium Readiness (50% - 79%)</option>
-                      <option value="Low">Low Readiness (&lt; 50%)</option>
+                      <option value="All">{dt('allReadiness')}</option>
+                      <option value="High">{dt('highReadiness')}</option>
+                      <option value="Medium">{dt('midReadiness')}</option>
+                      <option value="Low">{dt('lowReadiness')}</option>
                     </select>
                   </div>
                 </div>
@@ -1433,13 +1654,13 @@ function App() {
                   <table className="custom-table">
                     <thead>
                       <tr>
-                        <th>Student Name</th>
-                        <th>University & Year</th>
-                        <th>Target Role</th>
-                        <th>Verified Skills (Quiz Passed)</th>
-                        <th>Ready Skills (Self-declared)</th>
-                        <th>Readiness Score</th>
-                        <th>Action</th>
+                        <th>{dt('tableName')}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Universitet va Kurs' : 'University & Year'}</th>
+                        <th>{dt('tableRole')}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Tasdiqlangan ko\'nikmalar (LMS)' : 'Verified Skills (Quiz Passed)'}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'O\'zi kiritgan ko\'nikmalar' : 'Ready Skills (Self-declared)'}</th>
+                        <th>{dt('tableReadiness')}</th>
+                        <th>{dt('tableAction')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1449,10 +1670,10 @@ function App() {
                           <td>
                             <div>{student.university || 'N/A'}</div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                              {student.faculty} {student.year ? `• Year ${student.year}` : ''}
+                              {student.faculty} {student.year ? `• ${dashboardLanguage === 'uz' ? 'Kurs' : 'Year'} ${student.year}` : ''}
                             </div>
                           </td>
-                          <td>{student.target_role || <span style={{ color: 'var(--text-muted)' }}>Not specified</span>}</td>
+                          <td>{student.target_role || <span style={{ color: 'var(--text-muted)' }}>{dt('notSpecified')}</span>}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                               {student.verified_skills.map(skill => (
@@ -1475,7 +1696,7 @@ function App() {
                           </td>
                           <td>
                             <span className={`badge ${getReadinessColor(student.readiness_score)}`}>
-                              {(student.readiness_score === 0 || student.readiness_score === null || student.readiness_score === undefined) ? 'Profile Incomplete' : `${student.readiness_score}%`}
+                              {(student.readiness_score === 0 || student.readiness_score === null || student.readiness_score === undefined) ? dt('profileIncomplete') : `${student.readiness_score}%`}
                             </span>
                           </td>
                           <td>
@@ -1484,7 +1705,7 @@ function App() {
                               className="btn btn-outline" 
                               style={{ padding: '6px 12px', fontSize: '12px' }}
                             >
-                              Explore Profile
+                              {dashboardLanguage === 'uz' ? 'Profilni ko\'rish' : 'Explore Profile'}
                             </button>
                           </td>
                         </tr>
@@ -1492,7 +1713,7 @@ function App() {
                       {filteredStudents.length === 0 && (
                         <tr>
                           <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                            No student profiles match your search criteria.
+                            {dashboardLanguage === 'uz' ? 'Qidiruv mezonlariga mos keladigan talabalar topilmadi.' : 'No student profiles match your search criteria.'}
                           </td>
                         </tr>
                       )}
