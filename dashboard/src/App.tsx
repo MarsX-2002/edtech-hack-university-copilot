@@ -326,10 +326,12 @@ function App() {
           await fetchData(false, userData);
         } else {
           setUser(null);
+          setLoading(false);
         }
       }
     } catch (e) {
       console.warn("Session check failed, backend might be offline.", e);
+      setLoading(false);
     } finally {
       setAuthLoading(false);
     }
