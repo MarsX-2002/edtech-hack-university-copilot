@@ -691,6 +691,7 @@ function App() {
         last_login: null
       };
       setStaffUsers(prev => [...prev, newStaff]);
+      alert(`[Demo Mode] Xodim muvaffaqiyatli qo'shildi! / Staff added successfully!\nVaqtinchalik parol / Temporary Password: demo_temp_pass`);
       return true;
     }
     try {
@@ -700,7 +701,9 @@ function App() {
         body: JSON.stringify({ email, name, role, department })
       });
       if (res.ok) {
+        const data = await res.json();
         await fetchStaffList();
+        alert(`Xodim muvaffaqiyatli qo'shildi! / Staff added successfully!\n\nVaqtinchalik parol / Temporary Password: ${data.temp_password}\n\nIltimos, ushbu parolni xodimga yetkazing. U birinchi marta kirganda parolni o'zgartirishi shart. / Please share this password with the staff member. They must change it upon first login.`);
         return true;
       } else {
         const errData = await res.json();
@@ -2331,7 +2334,7 @@ function App() {
                 <div className="card">
                   <div className="card-header">
                     <h3>Add Staff Member to Allowlist</h3>
-                    <p>Only emails on this allowlist will be permitted to authenticate via Google OAuth.</p>
+                    <p>Only emails on this allowlist will be permitted to authenticate. Newly created staff will get a temporary password shown in an alert.</p>
                   </div>
                   
                   <form onSubmit={async (e) => {
