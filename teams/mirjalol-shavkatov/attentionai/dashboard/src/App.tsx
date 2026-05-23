@@ -20,7 +20,10 @@ import {
   LogOut
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (window.location.port === '5173'
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : window.location.origin);
 
 const DASHBOARD_TRANSLATIONS = {
   uz: {
@@ -399,8 +402,26 @@ function App() {
     window.open(`https://t.me/student_${profile.telegram_id}`, '_blank');
   };
 
-  const handleScheduleMockInterview = (profile: Profile) => {
-    alert(`📅 Mock Interview Scheduled!\n\nAn automated request has been sent to ${profile.name}'s Telegram Assistant to start a mock interview practice for the role of "${profile.target_role || 'Software Developer'}".`);
+  const handleScheduleMockInterview = async (profile: Profile) => {
+    if (isDemoMode) {
+      alert(`[Demo Mode] 📅 Mock Interview Scheduled!\n\nAn automated request has been sent to ${profile.name}'s Telegram Assistant to start a mock interview practice for the role of "${profile.target_role || 'Software Developer'}".`);
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/students/${profile.telegram_id}/schedule-interview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: profile.target_role })
+      });
+      if (res.ok) {
+        alert(`📅 Mock Interview Scheduled!\n\nAn automated invitation was sent to ${profile.name}'s Telegram bot to start an interview simulation for the role of "${profile.target_role || 'Software Developer'}".`);
+      } else {
+        const errData = await res.json().catch(() => ({ detail: 'Unknown error' }));
+        alert(`❌ Failed to schedule mock interview: ${errData.detail}`);
+      }
+    } catch (err: any) {
+      alert(`❌ Error scheduling mock interview: ${err.message}`);
+    }
   };
 
   const handleExportShortlist = (detail: StudentDetail) => {

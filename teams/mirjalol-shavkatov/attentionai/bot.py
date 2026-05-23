@@ -149,20 +149,33 @@ def main():
     # Register global error handler
     app.add_error_handler(error_handler)
 
-    # Run the bot
-    # Run the bot safely – handle network issues gracefully
+    # Run the bot (Webhook or Polling mode based on configuration)
+    webhook_url = os.getenv("WEBHOOK_URL")
+    port = int(os.getenv("PORT", "8443"))
+    
     try:
-        app.run_polling(drop_pending_updates=True)
+        if webhook_url:
+            logger.info(f"🌐 Starting bot in Webhook mode: {webhook_url} on port {port}")
+            app.run_webhook(
+                listen="0.0.0.0",
+                port=port,
+                url_path=TELEGRAM_BOT_TOKEN,
+                webhook_url=f"{webhook_url}/{TELEGRAM_BOT_TOKEN}",
+                drop_pending_updates=True
+            )
+        else:
+            logger.info("🤖 Starting bot in Polling mode...")
+            app.run_polling(drop_pending_updates=True)
     except Conflict as ce:
         logger.error(f"Telegram Conflict error (likely another bot instance): {ce}")
         logger.info("Exiting due to Conflict.")
         sys.exit(1)
     except TimedOut as te:
-        logger.error(f"Timed out while starting bot polling: {te}")
+        logger.error(f"Timed out: {te}")
         logger.info("Bot exiting due to timeout.")
         sys.exit(1)
     except NetworkError as ne:
-        logger.error(f"Network error while starting bot polling: {ne}")
+        logger.error(f"Network error: {ne}")
         logger.info("Bot exiting due to network issues.")
         sys.exit(1)
 

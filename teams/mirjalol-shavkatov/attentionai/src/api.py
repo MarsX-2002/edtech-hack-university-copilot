@@ -58,6 +58,9 @@ class StaffUpdateRequest(BaseModel):
 class StudentVerifyRequest(BaseModel):
     status: str
 
+class ScheduleInterviewRequest(BaseModel):
+    role: Optional[str] = None
+
 # ─── ENDPOINTS ───
 
 # ─── AUTH ENDPOINTS ───
@@ -764,6 +767,84 @@ def verify_student(id: int, request: Request, body: StudentVerifyRequest, staff 
         target_type="student", 
         target_id=student["telegram_user_id"], 
         details=f"Verification status set to: {body.status}"
+    )
+    return {"status": "ok"}
+
+
+@app.post("/api/admin/students/{telegram_id}/schedule-interview")
+async def schedule_mock_interview(telegram_id: str, request: Request, body: ScheduleInterviewRequest, staff = Depends(require_role("super_admin", "career_staff"))):
+    """Sends a Telegram invite to the student to start a mock interview."""
+    import httpx
+    from src.config import TELEGRAM_BOT_TOKEN
+    
+    if not TELEGRAM_BOT_TOKEN:
+        raise HTTPException(status_code=500, detail="Telegram bot is not configured (missing token)")
+        
+    students = load_students()
+    if telegram_id not in students:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    student = students[telegram_id]
+    name = student.get("name", "Student")
+    role = body.role or student.get("target_role") or "Software Developer"
+    lang = student.get("language", "uz")
+    
+    # Message content in appropriate language
+    if lang == "ru":
+        text = (
+            f"💼 *Уведомление Карьерного Центра*:\n"
+            f"Уважаемый(а) {name}, университетский карьерный центр запланировал для вас "
+            f"симуляцию собеседования на роль *{role}*.\n\n"
+            f"Нажмите кнопку ниже, чтобы начать."
+        )
+        btn_text = "🚀 Начать интервью"
+    elif lang == "en":
+        text = (
+            f"💼 *Career Center Notification*:\n"
+            f"Dear {name}, the university career center has scheduled a "
+            f"mock interview simulation for you for the role of *{role}*.\n\n"
+            f"Click the button below to start."
+        )
+        btn_text = "🚀 Start Interview"
+    else: # uz
+        text = (
+            f"💼 *Karyera Markazi Xabarnomasi*:\n"
+            f"Hurmatli {name}, universitet karyera markazi siz uchun "
+            f"*{role}* lavozimiga mo'ljallangan suhbat simulyatsiyasini rejalashtirdi.\n\n"
+            f"Boshlash uchun quyidagi tugmani bosing."
+        )
+        btn_text = "🚀 Suhbatni boshlash"
+
+    # Inline button markup
+    keyboard = {
+        "inline_keyboard": [
+            [{"text": btn_text, "callback_data": f"start_scheduled_interview:{role}"}]
+        ]
+    }
+    
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": int(telegram_id),
+        "text": text,
+        "parse_mode": "Markdown",
+        "reply_markup": json.dumps(keyboard)
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.post(url, json=payload, timeout=10.0)
+            if res.status_code != 200:
+                raise HTTPException(status_code=400, detail=f"Telegram API error: {res.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send Telegram message: {str(e)}")
+        
+    audit_from_request(
+        request,
+        staff,
+        "student_interview_scheduled",
+        target_type="student",
+        target_id=telegram_id,
+        details=f"Scheduled mock interview for role: {role}"
     )
     return {"status": "ok"}
 

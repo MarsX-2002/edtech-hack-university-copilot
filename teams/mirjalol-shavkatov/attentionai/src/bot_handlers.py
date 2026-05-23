@@ -288,6 +288,43 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 t("ask_name", lang),
                 reply_markup=ReplyKeyboardRemove()
             )
+    elif data.startswith("start_scheduled_interview:"):
+        role = data.split(":", 1)[1]
+        student = get_student(user.id)
+        lang = student.get("language", "uz") if student else "uz"
+        
+        if not student:
+            # Fallback if student is not registered in JSON storage
+            student = {
+                "telegram_user_id": str(user.id),
+                "telegram_username": user.username,
+                "telegram_full_name": user.full_name,
+                "name": user.full_name or "Student",
+                "language": lang,
+                "university": "PDP University",
+                "target_role": role
+            }
+        else:
+            student["target_role"] = role
+            
+        save_student(user.id, student)
+        
+        # Initiate stateful mock interview
+        conv_id = create_conversation(user.id, "interview")
+        context.user_data["active_conv_id"] = conv_id
+        context.user_data["state"] = "int_qa"
+        
+        # Remove invitation keyboard inline buttons to prevent double-clicks
+        await query.edit_message_reply_markup(reply_markup=None)
+        
+        await query.message.reply_text(t("processing", lang), reply_markup=ReplyKeyboardRemove())
+        
+        # Run the initial turn of interview
+        initial_prompt = f"Start mock interview for a '{role}' position, question type: mixed."
+        question, _ = run_interview_agent_turn(user.id, conv_id, initial_prompt, student, lang)
+        
+        await query.message.reply_text(question, reply_markup=get_back_keyboard(lang))
+        return
 
 
 # ──────────────── Message Handlers (State Machine) ────────────────
