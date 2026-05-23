@@ -1,0 +1,84 @@
+{
+  "total_users": 3,
+  "feature_usage": {
+    "skill_passport": 1,
+    "resume_builder": 2,
+    "interview_practice": 0,
+    "vacancies": 3,
+    "career_advice": 2
+  },
+  "events": [
+    {
+      "telegram_id": "976284588",
+      "event": "registration",
+      "details": "Target role: AI/ML Engineer",
+      "timestamp": "2026-05-22T16:17:31.603802"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "registration",
+      "details": "Target role: AI/ML Engineer",
+      "timestamp": "2026-05-22T16:20:22.969658"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "vacancies",
+      "details": "",
+      "timestamp": "2026-05-22T16:23:54.290112"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "career_advice",
+      "details": "🚀 Boshlash",
+      "timestamp": "2026-05-22T16:29:59.772605"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "vacancies",
+      "details": "",
+      "timestamp": "2026-05-22T18:00:32.439807"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "skill_passport",
+      "details": "",
+      "timestamp": "2026-05-22T18:04:43.515175"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "resume_builder",
+      "details": "",
+      "timestamp": "2026-05-22T19:42:00.309284"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "vacancies",
+      "details": "langchain",
+      "timestamp": "2026-05-22T21:54:32.155981"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "resume_builder",
+      "details": "",
+      "timestamp": "2026-05-22T23:32:10.734325"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "registration",
+      "details": "Target role: AI/ML Engineer",
+      "timestamp": "2026-05-23T07:09:48.037445"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "quiz_assessment",
+      "details": "Score: 3/3",
+      "timestamp": "2026-05-23T07:23:15.342366"
+    },
+    {
+      "telegram_id": "976284588",
+      "event": "career_advice",
+      "details": "Target Role Readiness: N/A bu nima ?",
+      "timestamp": "2026-05-23T07:24:50.567876"
+    }
+  ]
+}

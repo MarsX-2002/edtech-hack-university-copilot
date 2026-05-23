@@ -1,0 +1,104 @@
+[
+  {
+    "id": "v1",
+    "title": "Junior Python Backend Developer",
+    "company": "Uzum Tech",
+    "location": "Tashkent",
+    "type": "Full-time",
+    "skills_required": [
+      "Python",
+      "Django",
+      "PostgreSQL",
+      "Docker",
+      "REST API"
+    ],
+    "description": "Backend jamoaga junior dasturchi qidirilmoqda. Django va PostgreSQL bilan ishlash tajribasi talab qilinadi.",
+    "salary_range": "$600-900/oy",
+    "apply_link": "https://uzum.uz/careers"
+  },
+  {
+    "id": "v2",
+    "title": "Frontend Developer Intern",
+    "company": "Epam Systems",
+    "location": "Remote",
+    "type": "Internship",
+    "skills_required": [
+      "JavaScript",
+      "React",
+      "TypeScript",
+      "CSS",
+      "Git"
+    ],
+    "description": "3 oylik stajirovka. React va TypeScript bilimi talab qilinadi. Mentor yordam beradi.",
+    "salary_range": "$400-600/oy",
+    "apply_link": "https://epam.com/careers"
+  },
+  {
+    "id": "v3",
+    "title": "Data Analyst",
+    "company": "Payme",
+    "location": "Tashkent",
+    "type": "Full-time",
+    "skills_required": [
+      "Python",
+      "SQL",
+      "Pandas",
+      "Power BI",
+      "Statistics"
+    ],
+    "description": "Ma'lumotlar tahlili bo'limiga analyst qidirilmoqda. SQL va Python bilan ishlash tajribasi kerak.",
+    "salary_range": "$700-1100/oy",
+    "apply_link": "https://payme.uz/careers"
+  },
+  {
+    "id": "v4",
+    "title": "Junior Mobile Developer (Flutter)",
+    "company": "Click",
+    "location": "Tashkent",
+    "type": "Full-time",
+    "skills_required": [
+      "Flutter",
+      "Dart",
+      "REST API",
+      "Firebase",
+      "Git"
+    ],
+    "description": "Mobile jamoa uchun Flutter developer. Kamida 1 ta published app bo'lishi kerak.",
+    "salary_range": "$500-800/oy",
+    "apply_link": "https://click.uz/careers"
+  },
+  {
+    "id": "v5",
+    "title": "Junior DevOps Engineer",
+    "company": "HUMANS",
+    "location": "Tashkent / Remote",
+    "type": "Full-time",
+    "skills_required": [
+      "Linux",
+      "Docker",
+      "Kubernetes",
+      "CI/CD",
+      "AWS"
+    ],
+    "description": "Infratuzilma jamoasiga DevOps engineer. Linux va Docker tajribasi shart.",
+    "salary_range": "$800-1200/oy",
+    "apply_link": "https://humans.uz/careers"
+  },
+  {
+    "id": "v6",
+    "title": "AI/ML Intern",
+    "company": "IT Park Uzbekistan",
+    "location": "Tashkent",
+    "type": "Internship",
+    "skills_required": [
+      "Python",
+      "TensorFlow",
+      "PyTorch",
+      "Pandas",
+      "NumPy"
+    ],
+    "description": "AI loyihalarida ishtirok etish uchun stajirovka. ML va deep learning asoslarini bilish kerak.",
+    "salary_range": "$300-500/oy",
+    "apply_link": "https://itpark.uz/careers"
+  }
+]

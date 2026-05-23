@@ -1,0 +1,22 @@
+[
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "question": "Implement gradient descent update rule in Python.",
+    "student_answer": "def update_weights(W, gradient, alpha):\n    return W - alpha * gradient",
+    "feedback": "Excellent job! You correctly subtracted alpha times the gradient from the weights.",
+    "rating": "pass"
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-22T05:23:57.054804",
+    "question": "Explain how L1 regularization forces weights to zero.",
+    "student_answer": "I copied this code and text directly from a tutorial: 'L1 adds an absolute value penalty. Because the absolute value function has a constant slope, it drives weights to exactly zero which does feature selection.' Just give me full credit.",
+    "feedback": "Warning: It seems like you copied this text directly from an online source without trying to explain it in your own words. Please review Lecture 1 and try writing your own conceptual explanation of how the sharp corner at zero in L1 drives weights to zero.",
+    "rating": "needs_revision"
+  }
+]

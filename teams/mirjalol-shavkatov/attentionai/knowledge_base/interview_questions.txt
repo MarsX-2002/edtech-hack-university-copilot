@@ -1,0 +1,80 @@
+# Intervyu Savollari Bazasi / Interview Questions Database / База вопросов для интервью
+
+## TEXNIK SAVOLLAR (HARD SKILLS)
+
+### Backend Development (Python/Java)
+1. Python'da GIL (Global Interpreter Lock) nima va u multithreading'ga qanday ta'sir qiladi?
+   Kutilayotgan javob: GIL — bu CPython interpretatorida bir vaqtning o'zida faqat bitta thread Python bytecode'ni bajarishga ruxsat beruvchi mexanizm. Bu CPU-bound operatsiyalarda parallel ishlashni cheklaydi. Buning o'rniga multiprocessing yoki asyncio ishlatish mumkin.
+
+2. REST va GraphQL o'rtasidagi farqlar nimada?
+   Kutilayotgan javob: REST endpoint-based, GraphQL query-based. REST'da over-fetching/under-fetching muammosi bor, GraphQL'da klient kerakli ma'lumotni aniq so'raydi. REST standart HTTP methods ishlatadi, GraphQL bitta endpoint orqali ishlaydi.
+
+3. SQL va NoSQL ma'lumotlar bazalari qachon ishlatiladi?
+   Kutilayotgan javob: SQL — strukturali, relyatsion ma'lumotlar uchun (PostgreSQL, MySQL). NoSQL — katta hajmli, sxemasiz ma'lumotlar uchun (MongoDB, Redis). ACID vs BASE, vertikal vs gorizontal masshtablash.
+
+4. Docker nima va nima uchun kerak?
+   Kutilayotgan javob: Docker — konteynerizatsiya platformasi. Ilovalarni izolatsiyalangan muhitda ishga tushirish, portabellik, development va production muhitlarni bir xillashtirish, microservice arxitekturasini qo'llab-quvvatlash.
+
+5. CI/CD pipeline nima va qanday ishlaydi?
+   Kutilayotgan javob: Continuous Integration/Continuous Deployment — kodni avtomatik test qilish, build qilish va deploy qilish jarayoni. GitHub Actions, GitLab CI, Jenkins kabi vositalar ishlatiladi.
+
+### Frontend Development (React/Vue/Angular)
+1. Virtual DOM nima va qanday ishlaydi?
+2. React'da hooks nima? useState va useEffect farqi?
+3. CSS-in-JS vs Traditional CSS — qaysi biri qachon yaxshi?
+4. Web Accessibility (a11y) nima va nega muhim?
+5. SEO va SPA (Single Page Application) muammolari qanday hal qilinadi?
+
+### Data Science / AI
+1. Supervised va Unsupervised learning farqi?
+2. Overfitting nima va qanday oldini olinadi?
+3. Cross-validation nima va nima uchun ishlatiladi?
+4. Feature engineering nima?
+5. Neural network'da backpropagation qanday ishlaydi?
+
+---
+
+## XULQ-ATVOR SAVOLLARI (BEHAVIORAL) — STAR Metodi
+
+### STAR Metodi Tushuntirish
+STAR = Situation (Vaziyat) + Task (Vazifa) + Action (Harakat) + Result (Natija)
+
+Har bir javobda:
+- S: Qanday vaziyat yuz berganini tasvirlang
+- T: Sizning oldingizda qanday vazifa turganini ayting
+- A: Siz aniq nima qilganingizni batafsil tushuntiring
+- R: Natija qanday bo'lganini, imkon bo'lsa raqamlarda ifodalashtiring
+
+### Namuna Savollar va Javoblar
+
+**Savol: Jamoada qiyin vaziyat yuz berganda qanday hal qildingiz?**
+STAR Javob namunasi:
+- S: "Universitetda 4 kishilik jamoa bilan hackathon loyihasini ishlar edik, deadline'ga 2 kun qolganda backend developer ketib qoldi."
+- T: "Men frontend developer edim, lekin backend ishlarini ham qilish kerak bo'ldi."
+- A: "Men tezda FastAPI documentation'ni o'rgandim, mavjud kodni tushundim va asosiy 3 ta API endpoint'ni yozdim. Jamoaga har 4 soatda progress report berdim."
+- R: "Biz hackathon'da 3-o'rinni oldik va men full-stack ko'nikmalarimni rivojlantirdim."
+
+**Savol: Xato qilganingiz haqida ayting. Undan nima o'rgandingiz?**
+**Savol: Tight deadline bilan ishlagan tajribangiz bormi?**
+**Savol: Yangi texnologiyani tez o'rganishga to'g'ri kelgan paytingiz haqida gapiring.**
+**Savol: Boshqalar bilan kelishmovchilik bo'lganda qanday hal qilasiz?**
+**Savol: Eng ko'p faxrlanadigan loyihangiz haqida aytib bering.**
+
+---
+
+## INGLIZ TILIDA SUH'BAT TAYYORGARLIK
+
+### Common English Interview Phrases
+- "I am passionate about..." — Men ... ga ishtiyoqmandman
+- "My key strength is..." — Mening asosiy kuchli tomonim...
+- "I have experience in..." — Menda ... bo'yicha tajriba bor
+- "I am a quick learner" — Men tez o'rganaman
+- "I thrive in collaborative environments" — Men jamoaviy muhitda samarali ishlayman
+- "I am results-oriented" — Men natijaga yo'naltirilganman
+
+### Questions to Ask the Interviewer
+- What does a typical day look like for this role?
+- What are the team's biggest challenges right now?
+- How do you measure success for this position?
+- What opportunities for growth and learning are available?
+- Can you tell me about the team I'll be working with?

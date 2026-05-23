@@ -1,0 +1,94 @@
+# Rezyume Shablonlari / Resume Templates / Шаблоны резюме
+
+## ATS-Optimized Resume Structure
+
+### Standard IT Resume Template (ATS-Friendly)
+
+**FULL NAME**
+Phone: +998 XX XXX XX XX | Email: name@email.com | LinkedIn: linkedin.com/in/name | GitHub: github.com/name
+Location: Tashkent, Uzbekistan
+
+---
+
+**PROFESSIONAL SUMMARY**
+[2-3 sentences summarizing your experience, key skills, and career objective. Use keywords from the job description.]
+
+Example for Junior Backend Developer:
+"Motivated Computer Science graduate with hands-on experience in Python, Django, and PostgreSQL. Built 3 production-ready REST APIs during university projects. Seeking a Junior Backend Developer role to apply strong algorithmic thinking and database design skills."
+
+Example for Frontend Developer:
+"Creative frontend developer with 1+ year experience building responsive web applications using React.js, TypeScript, and modern CSS. Passionate about user experience and accessibility. Looking for a frontend role at a product company."
+
+---
+
+**TECHNICAL SKILLS**
+- Programming Languages: Python, JavaScript, TypeScript, Java
+- Frameworks: Django, FastAPI, React.js, Next.js
+- Databases: PostgreSQL, MongoDB, Redis
+- Tools: Git, Docker, Linux, CI/CD, AWS
+- Soft Skills: Teamwork, Communication, Problem-solving, Time Management
+
+---
+
+**EDUCATION**
+Bachelor of Science in Computer Science
+[University Name], Tashkent, Uzbekistan
+Expected Graduation: June 2025
+GPA: 3.8/4.0
+
+Relevant Coursework: Data Structures, Algorithms, Database Systems, Web Development, Machine Learning
+
+---
+
+**PROJECTS**
+**E-commerce API** | Python, Django, PostgreSQL | github.com/name/ecommerce
+- Designed and implemented a RESTful API serving 50+ endpoints for product management, user authentication, and order processing
+- Implemented JWT-based authentication and role-based access control
+- Wrote 80+ unit tests achieving 90% code coverage
+
+**Task Management App** | React.js, TypeScript, Firebase | github.com/name/taskapp
+- Built a responsive single-page application with drag-and-drop task management
+- Implemented real-time collaboration using Firebase Realtime Database
+- Deployed to Vercel with automated CI/CD pipeline
+
+---
+
+**EXPERIENCE**
+Software Development Intern | [Company Name] | June 2024 - August 2024
+- Developed 3 microservices using FastAPI, reducing API response time by 40%
+- Collaborated with a team of 5 developers using Agile methodology
+- Wrote technical documentation for 2 internal APIs
+
+---
+
+**CERTIFICATIONS**
+- AWS Cloud Practitioner (2024)
+- Meta Frontend Developer Professional Certificate (2024)
+
+---
+
+## ATS Tips / ATS bo'yicha maslahatlar
+
+1. Oddiy formatlash ishlating — murakkab jadvallar, rasmlar, grafik elementlardan qoching
+2. Kalit so'zlarni vakansiya tavsifidan oling va rezyumega tabiiy ravishda joylashtiring
+3. PDF formatda saqlang (agar kompaniya boshqa format talab qilmasa)
+4. Har bir vakansiya uchun rezyumeni moslashtiring — universal rezyume ATS dan o'tmaydi
+5. Sana formatini standart qiling: "June 2024 - August 2024" yoki "06/2024 - 08/2024"
+6. Professional summary'da eng muhim 3-4 ko'nikma va kalit so'zlarni ishlatish kerak
+7. Tajribangizni raqamlar bilan tasdiqlang: "40% tezlashtirdim", "50+ endpoint", "90% test coverage"
+8. GitHub profil havolasini albatta qo'shing — bu IT sohasida eng muhim portfolio
+
+## Cover Letter Template / Muqova Xat Shabloni
+
+Dear [Hiring Manager Name / Hiring Team],
+
+I am writing to express my interest in the [Position Title] role at [Company Name], as advertised on [Platform]. With my background in [relevant field] and hands-on experience in [key technologies], I am confident I can contribute meaningfully to your team.
+
+During my studies at [University], I developed [specific project or skill] that directly aligns with your team's needs. For example, [specific achievement with measurable result].
+
+I am particularly drawn to [Company Name] because of [specific reason - company mission, product, culture]. I believe my [specific skills] combined with my passion for [relevant area] make me an excellent fit for this role.
+
+I look forward to discussing how my skills and experiences align with your team's goals.
+
+Sincerely,
+[Your Name]

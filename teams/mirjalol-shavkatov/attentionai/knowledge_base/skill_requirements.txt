@@ -1,0 +1,132 @@
+# Ko'nikmalar Talablari / Skill Requirements by Role / Требования к навыкам
+
+## Frontend Developer (Junior)
+### Texnik ko'nikmalar (Hard Skills):
+- HTML5, CSS3, JavaScript (ES6+) — Mustahkam asos
+- React.js yoki Vue.js — kamida bitta framework
+- TypeScript — asosiy tushunchalar
+- Responsive Design, CSS Flexbox, Grid
+- Git va GitHub/GitLab
+- REST API bilan ishlash (fetch, axios)
+- Package managers: npm yoki yarn
+- Basic testing: Jest, React Testing Library
+
+### Yumshoq ko'nikmalar (Soft Skills):
+- UI/UX tushunchasi va dizayner bilan ishlash
+- Jamoaviy ishlash va kommunikatsiya
+- Muammolarni hal qilish qobiliyati
+- Ingliz tili (texnik hujjatlarni o'qish darajasida)
+
+### O'rganish yo'l xaritasi:
+1. HTML/CSS/JS asoslarini mustahkamlash (1-2 oy)
+2. React yoki Vue framework o'rganish (2-3 oy)
+3. TypeScript o'rganish (1 oy)
+4. 2-3 ta portfolio loyiha qilish (2-3 oy)
+5. Git, deployment, CI/CD o'rganish (1 oy)
+
+---
+
+## Backend Developer (Junior)
+### Texnik ko'nikmalar (Hard Skills):
+- Python (Django/FastAPI) yoki Node.js (Express) yoki Java (Spring Boot)
+- SQL: PostgreSQL yoki MySQL
+- REST API dizayn va implementatsiya
+- Authentication: JWT, OAuth2
+- Docker asoslari
+- Git va versiya boshqaruvi
+- Linux terminal asoslari
+- Unit testing
+
+### Yumshoq ko'nikmalar (Soft Skills):
+- Analitik fikrlash
+- Hujjatlashtirish qobiliyati
+- Jamoaviy ishlash
+- Deadline bilan ishlash
+
+### O'rganish yo'l xaritasi:
+1. Python yoki JavaScript asoslarini mustahkamlash (1-2 oy)
+2. Framework tanlash va o'rganish: Django/FastAPI/Express (2-3 oy)
+3. Ma'lumotlar bazasi: SQL, ORM (1-2 oy)
+4. API dizayn va security (1 oy)
+5. Docker, deployment (1 oy)
+6. Portfolio loyihalar (2-3 oy)
+
+---
+
+## Data Analyst
+### Texnik ko'nikmalar:
+- Python: pandas, numpy, matplotlib, seaborn
+- SQL: murakkab so'rovlar, JOIN, subqueries, window functions
+- Excel: pivot tables, VLOOKUP, makroslar
+- BI Tools: Power BI yoki Tableau
+- Statistika asoslari: regression, hypothesis testing, correlation
+- Data cleaning va preprocessing
+
+### Yumshoq ko'nikmalar:
+- Ma'lumotlarni vizualizatsiya va prezentatsiya qilish
+- Biznes tushunchasi va stakeholder bilan muloqot
+- Analitik fikrlash va pattern recognition
+
+---
+
+## AI/ML Engineer (Junior)
+### Texnik ko'nikmalar:
+- Python: NumPy, Pandas, Scikit-learn, TensorFlow/PyTorch
+- Matematika: chiziqli algebra, ehtimollar nazariyasi, statistika
+- ML algoritmlari: regression, classification, clustering, neural networks
+- Deep Learning: CNN, RNN, Transformers asoslari
+- NLP yoki Computer Vision (kamida bitta yo'nalish)
+- MLOps asoslari: model deployment, monitoring
+
+### O'rganish yo'l xaritasi:
+1. Python va matematika asoslarini mustahkamlash (2-3 oy)
+2. ML asoslari: Scikit-learn bilan amaliy loyihalar (2-3 oy)
+3. Deep Learning: TensorFlow/PyTorch (2-3 oy)
+4. Tanlangan yo'nalishda chuqurlashish: NLP/CV (2-3 oy)
+5. Kaggle musobaqalari va portfolio (doimiy)
+
+---
+
+## DevOps Engineer (Junior)
+### Texnik ko'nikmalar:
+- Linux: system administration, shell scripting
+- Docker va Docker Compose
+- Kubernetes asoslari
+- CI/CD: GitHub Actions, GitLab CI, Jenkins
+- Cloud: AWS yoki Azure yoki GCP (kamida bitta)
+- Infrastructure as Code: Terraform yoki Ansible
+- Monitoring: Prometheus, Grafana
+- Networking asoslari
+
+---
+
+## Mobile Developer (Junior)
+### Texnik ko'nikmalar:
+- Flutter/Dart YOKI React Native/JavaScript YOKI Swift (iOS) / Kotlin (Android)
+- State management (Provider, Bloc, Redux)
+- REST API integratsiya
+- Local storage va caching
+- UI/UX mobile best practices
+- App Store / Google Play deployment
+
+---
+
+## UX/UI Designer
+### Texnik ko'nikmalar:
+- Figma (asosiy vosita)
+- Design Systems va Component Libraries
+- Wireframing va Prototyping
+- User Research va Usability Testing
+- Responsive va Adaptive Design
+- Basic HTML/CSS tushunchasi
+
+---
+
+## Project Manager (Tech)
+### Ko'nikmalar:
+- Agile/Scrum metodologiyalari
+- Jira, Trello, Notion kabi vositalar
+- Stakeholder management
+- Risk management
+- Technical literacy (dasturchilar bilan muloqot uchun)
+- Budget va timeline planning

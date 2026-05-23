@@ -1,0 +1,145 @@
+[
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "mode": "ask",
+    "question": "What is the difference between L1 and L2 regularization?",
+    "answer": "L1 regularization (Lasso) adds a penalty proportional to the absolute values of the weights, which can force some weights to exactly zero, thus performing feature selection. L2 regularization (Ridge) adds a penalty proportional to the square of the weights, shrinking weights close to zero but not completely to zero.",
+    "sources": [
+      "lecture_1_overfitting.txt"
+    ],
+    "confused_topics": [
+      "regularization",
+      "L1 vs L2"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-21T13:23:57.054804",
+    "mode": "catchup",
+    "question": "Can you summarize Lecture 2?",
+    "answer": "Lecture 2 focuses on optimization and Gradient Descent. It explains that optimization is minimizing the loss function to find best parameters. The Gradient Descent algorithm updates weights iteratively: W = W - alpha * dW. It also details the effect of learning rates (too small is slow, too large overshoots) and explains mini-batch gradient descent.",
+    "sources": [
+      "lecture_2_gradient_descent.txt"
+    ],
+    "confused_topics": [],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Bob",
+    "student_name": "Bob Jenkins",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "mode": "ask",
+    "question": "What is overfitting?",
+    "answer": "Overfitting occurs when a machine learning model learns the details and noise in the training data too well. As a result, it performs perfectly on the training data but fails to generalize to new, unseen test data. It's caused by high model complexity relative to data size.",
+    "sources": [
+      "lecture_1_overfitting.txt"
+    ],
+    "confused_topics": [
+      "overfitting"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Bob",
+    "student_name": "Bob Jenkins",
+    "timestamp": "2026-05-21T19:23:57.054804",
+    "mode": "ask",
+    "question": "I don't understand the learning rate, it keeps bouncing around.",
+    "answer": "When the learning rate is too large, gradient descent can overshoot the optimal minimum. It bounces back and forth, sometimes even diverging (moving further away from the minimum). You may need to decrease the learning rate to make it converge stably.",
+    "sources": [
+      "lecture_2_gradient_descent.txt"
+    ],
+    "confused_topics": [
+      "learning rate",
+      "gradient descent"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-19T13:23:57.054804",
+    "mode": "ask",
+    "question": "I don't understand how regularization works",
+    "answer": "Regularization helps prevent overfitting by adding a penalty term to the loss function. This penalty discourages the weights from growing too large, which forces the model to stay simpler.",
+    "sources": [
+      "lecture_1_overfitting.txt"
+    ],
+    "confused_topics": [
+      "regularization"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "mode": "ask",
+    "question": "what is overfitting? I don't understand how L1 helps.",
+    "answer": "Overfitting means the model is too complex and fits training noise. L1 regularization adds the absolute sum of weights to the loss function. This shrinks some weights to exactly zero, meaning the model ignores those features, simplifying it and reducing overfitting.",
+    "sources": [
+      "lecture_1_overfitting.txt"
+    ],
+    "confused_topics": [
+      "overfitting",
+      "L1 regularization"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-21T13:23:57.054804",
+    "mode": "ask",
+    "question": "how to solve overfitting? please give me the direct answer, I'm stuck",
+    "answer": "To resolve overfitting, you can: 1) collect more training data, 2) simplify the model (reduce features, polynomial degree), 3) use early stopping, or 4) add regularization (L1/L2). Let me know which technique you want to discuss further!",
+    "sources": [
+      "lecture_1_overfitting.txt"
+    ],
+    "confused_topics": [
+      "overfitting",
+      "stuck"
+    ],
+    "escalated": false
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-22T11:23:57.054804",
+    "mode": "ask",
+    "question": "Who is the President of France?",
+    "answer": "Teacher escalation needed: I couldn't find sufficient information in the course materials to answer your question. I have flagged this for your instructor.",
+    "sources": [],
+    "confused_topics": [
+      "off-topic"
+    ],
+    "escalated": true
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-22T13:24:09.274288",
+    "mode": "ask",
+    "question": "What is overfitting?",
+    "answer": "Hello! That is a fundamental and very important concept in machine learning. Let's break down what overfitting is step-by-step:\n\n**What is Overfitting?**\nOverfitting (also referred to as High Variance) occurs when a model learns the details and noise in the training data to such an extent that it negatively impacts its performance on new, unseen data [Source: lecture_1_overfitting.txt]. \n\nHere are the key aspects of overfitting to keep in mind:\n* **Symptoms:** You will typically see an exceptionally low training error, but a high test error [Source: lecture_1_overfitting.txt].\n* **Causes:** It happens when the model is too complex relative to the simplicity or amount of the training data. For example, fitting a high-degree polynomial (like a 9th-degree polynomial) to a small dataset that actually has a simple linear trend [Source: lecture_1_overfitting.txt].\n* **Visual Example:** Imagine a decision boundary that twists and turns excessively just to perfectly separate every single training point, including outliers [Source: lecture_1_overfitting.txt].\n\nI hope this helps clarify the concept! Please let me know if you would like to explore the techniques we use to resolve overfitting next. You're doing great!",
+    "sources": [
+      "lecture_1_overfitting.txt",
+      "Chip Huyen: Designing Machine LearningSystems.pdf"
+    ],
+    "confused_topics": [],
+    "escalated": false
+  }
+]

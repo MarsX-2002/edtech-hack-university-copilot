@@ -1,0 +1,25 @@
+Lecture 1: Generalization, Overfitting, and Regularization
+
+1. The Goal of Machine Learning
+The fundamental goal of machine learning is to build models that generalize well to unseen, new data. It is easy to build a model that performs perfectly on the training data, but it is much harder to ensure that it works on test data.
+
+2. Overfitting (High Variance)
+Overfitting occurs when a model learns the detail and noise in the training data to the extent that it negatively impacts the performance of the model on new data.
+- Symptoms: Exceptionally low training error, but high test error.
+- Causes: The model is too complex relative to the simplicity/amount of the training data. For example, fitting a high-degree polynomial (e.g., 9th degree) to a small dataset that has a simple linear trend.
+- Visual Example: A decision boundary that twists and turns to separate every single training point perfectly, including outliers.
+
+3. Underfitting (High Bias)
+Underfitting occurs when a model cannot capture the underlying trend of the data.
+- Symptoms: High training error and high test error.
+- Causes: The model is too simple. For example, fitting a straight line to data that is clearly quadratic.
+
+4. Resolving Overfitting
+To combat overfitting, machine learning practitioners use several techniques:
+- More Data: Collecting more training data is the most direct way to help the model generalize.
+- Simplify the Model: Reduce the number of features, decrease the polynomial degree, or reduce the number of layers/neurons in a neural network.
+- Early Stopping: Stop training when validation performance starts to degrade.
+- Regularization: Add a penalty term to the loss function that discourages complex models by shrinking coefficients (L1/L2 regularization).
+  - L2 Regularization (Ridge): Adds the sum of squared weights (W^2) multiplied by lambda to the loss. It shrinks weights close to zero but not exactly zero.
+  - L1 Regularization (Lasso): Adds the sum of absolute values of weights (|W|) to the loss. It can force weights to exactly zero, performing feature selection.
+- Validation Set: Always split data into Training, Validation, and Test sets. Use the validation set to tune hyperparameters (like regularization strength lambda) and check for overfitting.

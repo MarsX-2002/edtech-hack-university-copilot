@@ -1,0 +1,21 @@
+Course Name: CS-401 Introduction to Machine Learning
+Instructor: Dr. Angela Vance
+Location: Science Hall, Room 302
+Term: Fall 2026
+
+Course Description:
+This course provides a broad introduction to machine learning, datamining, and statistical pattern recognition. Topics include: supervised learning (parametric/non-parametric algorithms, support vector machines, kernels, neural networks), unsupervised learning (clustering, dimensionality reduction, recommender systems, deep learning), and best practices in machine learning (bias/variance theory; innovation process in machine learning and AI).
+
+Required Prerequisites:
+- Basic linear algebra (matrices, eigenvectors).
+- Probability and statistics (distributions, expectation, conditional probability).
+- Programming experience in Python.
+
+Grading Policy:
+- Quizzes: 20%
+- Homework Assignments: 30%
+- Midterm Exam: 20%
+- Final Project: 30%
+
+Academic Integrity:
+Students are encouraged to discuss homework questions but MUST write their own answers. Copying answers, code, or using AI tools to write final answers is strictly prohibited and counts as plagiarism. If you use AI tools, they should only be used as a personal tutor to explain concepts and offer hints.

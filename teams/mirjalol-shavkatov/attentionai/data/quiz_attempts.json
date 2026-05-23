@@ -1,0 +1,157 @@
+[
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "questions": [
+      "What is the primary symptom of overfitting?",
+      "What does L1 regularization do that L2 does not?",
+      "How does more training data help overfitting?"
+    ],
+    "student_answers": [
+      "Low training error but high test error.",
+      "It forces some weights to exactly zero.",
+      "It helps the model generalize by showing it more examples."
+    ],
+    "evaluations": [
+      {
+        "correct": true,
+        "feedback": "Correct. High test error is the classic sign of overfitting."
+      },
+      {
+        "correct": true,
+        "feedback": "Correct. This leads to sparse feature selection."
+      },
+      {
+        "correct": true,
+        "feedback": "Correct. More data prevents fitting to noise."
+      }
+    ],
+    "score": 3
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Bob",
+    "student_name": "Bob Jenkins",
+    "timestamp": "2026-05-21T13:23:57.054804",
+    "questions": [
+      "What causes underfitting?",
+      "What is the update rule for gradient descent?",
+      "What happens if the learning rate is too large?"
+    ],
+    "student_answers": [
+      "The model is too simple for the data.",
+      "W = W + alpha * dW",
+      "It makes it converge really fast."
+    ],
+    "evaluations": [
+      {
+        "correct": true,
+        "feedback": "Correct. Fitting a linear model to quadratic data is an example."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. The correct rule is W = W - alpha * dW (subtract gradient, not add)."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. A large learning rate causes the model to overshoot the minimum and diverge."
+      }
+    ],
+    "score": 1
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-20T13:23:57.054804",
+    "questions": [
+      "What is the main sign of overfitting?",
+      "Name two ways to solve overfitting.",
+      "What is L2 regularization also known as?"
+    ],
+    "student_answers": [
+      "High training error.",
+      "Make the model bigger, and use less data.",
+      "Lasso"
+    ],
+    "evaluations": [
+      {
+        "correct": false,
+        "feedback": "Incorrect. Overfitting is characterized by LOW training error and HIGH test error."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. You should simplify the model and collect MORE data, not less."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. L2 regularization is known as Ridge regularization; Lasso is L1."
+      }
+    ],
+    "score": 0
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Charlie",
+    "student_name": "Charlie Davis",
+    "timestamp": "2026-05-22T09:23:57.054804",
+    "questions": [
+      "What does learning rate control?",
+      "What is Stochastic Gradient Descent?",
+      "What is a validation set used for?"
+    ],
+    "student_answers": [
+      "How big of a step we take.",
+      "It updates weights for the entire dataset.",
+      "I don't know."
+    ],
+    "evaluations": [
+      {
+        "correct": true,
+        "feedback": "Correct. It controls step size alpha."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. SGD updates weights for each individual sample, not the entire dataset."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. The validation set is used to tune hyperparameters and check for overfitting."
+      }
+    ],
+    "score": 1
+  },
+  {
+    "course_id": "ml-demo",
+    "student_id": "Alice",
+    "student_name": "Alice Peterson",
+    "timestamp": "2026-05-22T13:24:28.743582",
+    "questions": [
+      "What is the primary symptom of overfitting in machine learning?",
+      "Which weights update rule corresponds to Gradient Descent?",
+      "What is a primary danger of setting the learning rate (alpha) too large?"
+    ],
+    "student_answers": [
+      "A) The model training will take too many iterations and be very slow.",
+      "A) The model training will take too many iterations and be very slow.",
+      "A) The model training will take too many iterations and be very slow."
+    ],
+    "evaluations": [
+      {
+        "correct": false,
+        "feedback": "Incorrect. Overfitting is characterized by a model performing exceptionally well on training data (low error) but poorly on new test data (high error)."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. Gradient descent moves in the direction opposite to the gradient to minimize the loss, hence we subtract: W = W - alpha * dW."
+      },
+      {
+        "correct": false,
+        "feedback": "Incorrect. An excessively large learning rate causes step sizes to overshoot the optimal minimum, leading to divergence or unstable oscillations."
+      }
+    ],
+    "score": 0
+  }
+]

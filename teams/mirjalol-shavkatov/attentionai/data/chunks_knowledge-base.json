@@ -1,0 +1,122 @@
+[
+  {
+    "id": "kb_interview_questions.txt_chunk_0",
+    "filename": "interview_questions.txt",
+    "chunk_index": 0,
+    "text": "# Intervyu Savollari Bazasi / Interview Questions Database / База вопросов для интервью\n\n## TEXNIK SAVOLLAR (HARD SKILLS)\n\n### Backend Development (Python/Java)\n1. Python'da GIL (Global Interpreter Lock) nima va u multithreading'ga qanday ta'sir qiladi?\n   Kutilayotgan javob: GIL — bu CPython interpretatorida bir vaqtning o'zida faqat bitta thread Python bytecode'ni bajarishga ruxsat beruvchi mexanizm. Bu CPU-bound operatsiyalarda parallel ishlashni cheklaydi. Buning o'rniga multiprocessing yoki asyncio ishlatish mumkin.\n\n2. REST va GraphQL o'rtasidagi farqlar nimada?\n   Kutilayotgan javob: REST endpoint-based, GraphQL query-based. REST'da over-fetching/under-fetching muammosi bor, GraphQL'da klient kerakli ma'lumotni aniq so'raydi. REST standart HTTP methods ishlatadi, GraphQL bitta endpoint orqali ishlaydi.\n\n3. SQL va NoSQL ma'lumotlar bazalari qachon ishlatiladi?\n   Kutilayotgan javob: SQL — strukturali, relyatsion ma'lumotlar uchun (PostgreSQL, MySQL). NoSQL — katta hajmli, sxemasi"
+  },
+  {
+    "id": "kb_interview_questions.txt_chunk_1",
+    "filename": "interview_questions.txt",
+    "chunk_index": 1,
+    "text": ": SQL — strukturali, relyatsion ma'lumotlar uchun (PostgreSQL, MySQL). NoSQL — katta hajmli, sxemasiz ma'lumotlar uchun (MongoDB, Redis). ACID vs BASE, vertikal vs gorizontal masshtablash.\n\n4. Docker nima va nima uchun kerak?\n   Kutilayotgan javob: Docker — konteynerizatsiya platformasi. Ilovalarni izolatsiyalangan muhitda ishga tushirish, portabellik, development va production muhitlarni bir xillashtirish, microservice arxitekturasini qo'llab-quvvatlash.\n\n5. CI/CD pipeline nima va qanday ishlaydi?\n   Kutilayotgan javob: Continuous Integration/Continuous Deployment — kodni avtomatik test qilish, build qilish va deploy qilish jarayoni. GitHub Actions, GitLab CI, Jenkins kabi vositalar ishlatiladi.\n\n### Frontend Development (React/Vue/Angular)\n1. Virtual DOM nima va qanday ishlaydi?\n2. React'da hooks nima? useState va useEffect farqi?\n3. CSS-in-JS vs Traditional CSS — qaysi biri qachon yaxshi?\n4. Web Accessibility (a11y) nima va nega muhim?\n5. SEO va SPA (Single Page Application) muammol"
+  },
+  {
+    "id": "kb_interview_questions.txt_chunk_2",
+    "filename": "interview_questions.txt",
+    "chunk_index": 2,
+    "text": "shi?\n4. Web Accessibility (a11y) nima va nega muhim?\n5. SEO va SPA (Single Page Application) muammolari qanday hal qilinadi?\n\n### Data Science / AI\n1. Supervised va Unsupervised learning farqi?\n2. Overfitting nima va qanday oldini olinadi?\n3. Cross-validation nima va nima uchun ishlatiladi?\n4. Feature engineering nima?\n5. Neural network'da backpropagation qanday ishlaydi?\n\n---\n\n## XULQ-ATVOR SAVOLLARI (BEHAVIORAL) — STAR Metodi\n\n### STAR Metodi Tushuntirish\nSTAR = Situation (Vaziyat) + Task (Vazifa) + Action (Harakat) + Result (Natija)\n\nHar bir javobda:\n- S: Qanday vaziyat yuz berganini tasvirlang\n- T: Sizning oldingizda qanday vazifa turganini ayting\n- A: Siz aniq nima qilganingizni batafsil tushuntiring\n- R: Natija qanday bo'lganini, imkon bo'lsa raqamlarda ifodalashtiring\n\n### Namuna Savollar va Javoblar\n\n**Savol: Jamoada qiyin vaziyat yuz berganda qanday hal qildingiz?**\nSTAR Javob namunasi:\n- S: \"Universitetda 4 kishilik jamoa bilan hackathon loyihasini ishlar edik, deadline'ga 2"
+  },
+  {
+    "id": "kb_interview_questions.txt_chunk_3",
+    "filename": "interview_questions.txt",
+    "chunk_index": 3,
+    "text": "amunasi:\n- S: \"Universitetda 4 kishilik jamoa bilan hackathon loyihasini ishlar edik, deadline'ga 2 kun qolganda backend developer ketib qoldi.\"\n- T: \"Men frontend developer edim, lekin backend ishlarini ham qilish kerak bo'ldi.\"\n- A: \"Men tezda FastAPI documentation'ni o'rgandim, mavjud kodni tushundim va asosiy 3 ta API endpoint'ni yozdim. Jamoaga har 4 soatda progress report berdim.\"\n- R: \"Biz hackathon'da 3-o'rinni oldik va men full-stack ko'nikmalarimni rivojlantirdim.\"\n\n**Savol: Xato qilganingiz haqida ayting. Undan nima o'rgandingiz?**\n**Savol: Tight deadline bilan ishlagan tajribangiz bormi?**\n**Savol: Yangi texnologiyani tez o'rganishga to'g'ri kelgan paytingiz haqida gapiring.**\n**Savol: Boshqalar bilan kelishmovchilik bo'lganda qanday hal qilasiz?**\n**Savol: Eng ko'p faxrlanadigan loyihangiz haqida aytib bering.**\n\n---\n\n## INGLIZ TILIDA SUH'BAT TAYYORGARLIK\n\n### Common English Interview Phrases\n- \"I am passionate about...\" — Men ... ga ishtiyoqmandman\n- \"My key strength is.."
+  },
+  {
+    "id": "kb_interview_questions.txt_chunk_4",
+    "filename": "interview_questions.txt",
+    "chunk_index": 4,
+    "text": "Interview Phrases\n- \"I am passionate about...\" — Men ... ga ishtiyoqmandman\n- \"My key strength is...\" — Mening asosiy kuchli tomonim...\n- \"I have experience in...\" — Menda ... bo'yicha tajriba bor\n- \"I am a quick learner\" — Men tez o'rganaman\n- \"I thrive in collaborative environments\" — Men jamoaviy muhitda samarali ishlayman\n- \"I am results-oriented\" — Men natijaga yo'naltirilganman\n\n### Questions to Ask the Interviewer\n- What does a typical day look like for this role?\n- What are the team's biggest challenges right now?\n- How do you measure success for this position?\n- What opportunities for growth and learning are available?\n- Can you tell me about the team I'll be working with?"
+  },
+  {
+    "id": "kb_skill_requirements.txt_chunk_0",
+    "filename": "skill_requirements.txt",
+    "chunk_index": 0,
+    "text": "# Ko'nikmalar Talablari / Skill Requirements by Role / Требования к навыкам\n\n## Frontend Developer (Junior)\n### Texnik ko'nikmalar (Hard Skills):\n- HTML5, CSS3, JavaScript (ES6+) — Mustahkam asos\n- React.js yoki Vue.js — kamida bitta framework\n- TypeScript — asosiy tushunchalar\n- Responsive Design, CSS Flexbox, Grid\n- Git va GitHub/GitLab\n- REST API bilan ishlash (fetch, axios)\n- Package managers: npm yoki yarn\n- Basic testing: Jest, React Testing Library\n\n### Yumshoq ko'nikmalar (Soft Skills):\n- UI/UX tushunchasi va dizayner bilan ishlash\n- Jamoaviy ishlash va kommunikatsiya\n- Muammolarni hal qilish qobiliyati\n- Ingliz tili (texnik hujjatlarni o'qish darajasida)\n\n### O'rganish yo'l xaritasi:\n1. HTML/CSS/JS asoslarini mustahkamlash (1-2 oy)\n2. React yoki Vue framework o'rganish (2-3 oy)\n3. TypeScript o'rganish (1 oy)\n4. 2-3 ta portfolio loyiha qilish (2-3 oy)\n5. Git, deployment, CI/CD o'rganish (1 oy)\n\n---\n\n## Backend Developer (Junior)\n### Texnik ko'nikmalar (Hard Skills):\n- Python (D"
+  },
+  {
+    "id": "kb_skill_requirements.txt_chunk_1",
+    "filename": "skill_requirements.txt",
+    "chunk_index": 1,
+    "text": "rganish (1 oy)\n\n---\n\n## Backend Developer (Junior)\n### Texnik ko'nikmalar (Hard Skills):\n- Python (Django/FastAPI) yoki Node.js (Express) yoki Java (Spring Boot)\n- SQL: PostgreSQL yoki MySQL\n- REST API dizayn va implementatsiya\n- Authentication: JWT, OAuth2\n- Docker asoslari\n- Git va versiya boshqaruvi\n- Linux terminal asoslari\n- Unit testing\n\n### Yumshoq ko'nikmalar (Soft Skills):\n- Analitik fikrlash\n- Hujjatlashtirish qobiliyati\n- Jamoaviy ishlash\n- Deadline bilan ishlash\n\n### O'rganish yo'l xaritasi:\n1. Python yoki JavaScript asoslarini mustahkamlash (1-2 oy)\n2. Framework tanlash va o'rganish: Django/FastAPI/Express (2-3 oy)\n3. Ma'lumotlar bazasi: SQL, ORM (1-2 oy)\n4. API dizayn va security (1 oy)\n5. Docker, deployment (1 oy)\n6. Portfolio loyihalar (2-3 oy)\n\n---\n\n## Data Analyst\n### Texnik ko'nikmalar:\n- Python: pandas, numpy, matplotlib, seaborn\n- SQL: murakkab so'rovlar, JOIN, subqueries, window functions\n- Excel: pivot tables, VLOOKUP, makroslar\n- BI Tools: Power BI yoki Tableau"
+  },
+  {
+    "id": "kb_skill_requirements.txt_chunk_2",
+    "filename": "skill_requirements.txt",
+    "chunk_index": 2,
+    "text": "eries, window functions\n- Excel: pivot tables, VLOOKUP, makroslar\n- BI Tools: Power BI yoki Tableau\n- Statistika asoslari: regression, hypothesis testing, correlation\n- Data cleaning va preprocessing\n\n### Yumshoq ko'nikmalar:\n- Ma'lumotlarni vizualizatsiya va prezentatsiya qilish\n- Biznes tushunchasi va stakeholder bilan muloqot\n- Analitik fikrlash va pattern recognition\n\n---\n\n## AI/ML Engineer (Junior)\n### Texnik ko'nikmalar:\n- Python: NumPy, Pandas, Scikit-learn, TensorFlow/PyTorch\n- Matematika: chiziqli algebra, ehtimollar nazariyasi, statistika\n- ML algoritmlari: regression, classification, clustering, neural networks\n- Deep Learning: CNN, RNN, Transformers asoslari\n- NLP yoki Computer Vision (kamida bitta yo'nalish)\n- MLOps asoslari: model deployment, monitoring\n\n### O'rganish yo'l xaritasi:\n1. Python va matematika asoslarini mustahkamlash (2-3 oy)\n2. ML asoslari: Scikit-learn bilan amaliy loyihalar (2-3 oy)\n3. Deep Learning: TensorFlow/PyTorch (2-3 oy)\n4. Tanlangan yo'nalishda ch"
+  },
+  {
+    "id": "kb_skill_requirements.txt_chunk_3",
+    "filename": "skill_requirements.txt",
+    "chunk_index": 3,
+    "text": "amaliy loyihalar (2-3 oy)\n3. Deep Learning: TensorFlow/PyTorch (2-3 oy)\n4. Tanlangan yo'nalishda chuqurlashish: NLP/CV (2-3 oy)\n5. Kaggle musobaqalari va portfolio (doimiy)\n\n---\n\n## DevOps Engineer (Junior)\n### Texnik ko'nikmalar:\n- Linux: system administration, shell scripting\n- Docker va Docker Compose\n- Kubernetes asoslari\n- CI/CD: GitHub Actions, GitLab CI, Jenkins\n- Cloud: AWS yoki Azure yoki GCP (kamida bitta)\n- Infrastructure as Code: Terraform yoki Ansible\n- Monitoring: Prometheus, Grafana\n- Networking asoslari\n\n---\n\n## Mobile Developer (Junior)\n### Texnik ko'nikmalar:\n- Flutter/Dart YOKI React Native/JavaScript YOKI Swift (iOS) / Kotlin (Android)\n- State management (Provider, Bloc, Redux)\n- REST API integratsiya\n- Local storage va caching\n- UI/UX mobile best practices\n- App Store / Google Play deployment\n\n---\n\n## UX/UI Designer\n### Texnik ko'nikmalar:\n- Figma (asosiy vosita)\n- Design Systems va Component Libraries\n- Wireframing va Prototyping\n- User Research va Usability Test"
+  },
+  {
+    "id": "kb_skill_requirements.txt_chunk_4",
+    "filename": "skill_requirements.txt",
+    "chunk_index": 4,
+    "text": "Design Systems va Component Libraries\n- Wireframing va Prototyping\n- User Research va Usability Testing\n- Responsive va Adaptive Design\n- Basic HTML/CSS tushunchasi\n\n---\n\n## Project Manager (Tech)\n### Ko'nikmalar:\n- Agile/Scrum metodologiyalari\n- Jira, Trello, Notion kabi vositalar\n- Stakeholder management\n- Risk management\n- Technical literacy (dasturchilar bilan muloqot uchun)\n- Budget va timeline planning"
+  },
+  {
+    "id": "kb_career_guide.txt_chunk_0",
+    "filename": "career_guide.txt",
+    "chunk_index": 0,
+    "text": "# Karyera Qo'llanma / Career Guide / Карьерное руководство\n\n## LinkedIn Profil Optimallashtirish\n\n### Professional Headline (Sarlavha)\nYaxshi: \"Junior Backend Developer | Python | Django | FastAPI | Open to Opportunities\"\nYomon: \"Student at XYZ University\"\n\n### About Section (O'zingiz haqida)\nQoidalar:\n1. Birinchi 3 qatorda asosiy ko'nikmalaringiz va maqsadingizni yozing\n2. Loyihalaringiz haqida qisqacha ma'lumot bering\n3. Kalit so'zlarni tabiiy ravishda joylashtiring\n4. Call to action bilan yakunlang: \"Let's connect!\" yoki \"Open to new opportunities\"\n\nNamuna:\n\"Passionate about building scalable backend systems with Python and FastAPI. Currently pursuing Computer Science at [University], with hands-on experience in REST API development, PostgreSQL, and Docker.\n\nKey projects:\n🔹 E-commerce API — 50+ endpoints, JWT auth, 90% test coverage\n🔹 Real-time Chat App — WebSocket, Redis, deployed on AWS\n\nI am actively seeking Junior Backend Developer roles where I can grow and contribute to meanin"
+  },
+  {
+    "id": "kb_career_guide.txt_chunk_1",
+    "filename": "career_guide.txt",
+    "chunk_index": 1,
+    "text": "AWS\n\nI am actively seeking Junior Backend Developer roles where I can grow and contribute to meaningful products. Let's connect!\"\n\n---\n\n## Karyera Yarmarkasi Tayyorgarlik Skriptlari\n\n### Kompaniya Vakili Bilan Suhbat Skripti\n\n**Tanishish:**\n\"Assalomu alaykum! Mening ismim [Ism], men [Universitet] da [Yo'nalish] yo'nalishida [Kurs]-kurs talabaman. Men sizning kompaniyangiz haqida ko'p eshitganman va [aniq sabab: masalan, sizning AI loyihalaringiz menga juda qiziq] — shu sababli men siz bilan gaplashmoqchi edim.\"\n\n**Savol berish:**\n1. \"Sizning jamoangizda junior dasturchi qanday texnologiyalar bilan ishlaydi?\"\n2. \"Stajirovka dasturingiz haqida aytib bera olasizmi?\"\n3. \"Kompaniyangizda o'sish imkoniyatlari qanday?\"\n4. \"Junior dasturchilardan nimani eng ko'p kutasiz — texnik ko'nikmalarnimimi yoki o'rganish qobiliyatini?\"\n\n**Yakunlash:**\n\"Rahmat vaqtingiz uchun! Sizning kontaktingizni olsam bo'ladimi? LinkedIn'da bog'lanishimiz mumkinmi?\"\n\n### Hackathon va Tech Event Tayyorgarlik\n\n1. **Ol"
+  },
+  {
+    "id": "kb_career_guide.txt_chunk_2",
+    "filename": "career_guide.txt",
+    "chunk_index": 2,
+    "text": "bo'ladimi? LinkedIn'da bog'lanishimiz mumkinmi?\"\n\n### Hackathon va Tech Event Tayyorgarlik\n\n1. **Oldindan tadqiqot qiling** — Qaysi kompaniyalar qatnashishini bilib, ularning texnologiyalarini o'rganing\n2. **Elevator pitch tayyorlang** — 30 soniyalik o'zingiz haqida qisqacha taqdimot\n3. **Portfolio/GitHub tayyor bo'lsin** — Telefondan ko'rsata olish kerak\n4. **Vizit kartochka yoki QR kod** — LinkedIn profil uchun QR kod tayyorlang\n5. **Savollar ro'yxati** — Har bir kompaniya uchun 2-3 ta savol tayyorlang\n\n---\n\n## Ish Qidirish Strategiyasi\n\n### Qadam 1: O'zini Tahlil Qilish\n- Qaysi texnologiyalarni bilaman?\n- Qaysi sohada ishlashni xohlayman?\n- Qanday ish sharoiti men uchun muhim? (remote, office, hybrid)\n- Minimum oylik kutilmam qancha?\n\n### Qadam 2: Hujjatlarni Tayyorlash\n- ATS-optimized rezyume (har bir vakansiya uchun moslashtirilgan)\n- Cover letter shablon\n- LinkedIn profil optimallashtirish\n- GitHub portfolio tozalash va README yozish\n\n### Qadam 3: Faol Qidirish\n- LinkedIn Jobs,"
+  },
+  {
+    "id": "kb_career_guide.txt_chunk_3",
+    "filename": "career_guide.txt",
+    "chunk_index": 3,
+    "text": "ashtirish\n- GitHub portfolio tozalash va README yozish\n\n### Qadam 3: Faol Qidirish\n- LinkedIn Jobs, HeadHunter, Telegram kanallarda kundalik qidirish\n- Kompaniya career page'larini to'g'ridan-to'g'ri tekshirish\n- Networking — professional meetup va eventlarga borish\n- University career center xizmatlaridan foydalanish\n\n### Qadam 4: Suhbatga Tayyorlanish\n- Texnik savollar mashq qilish (LeetCode, HackerRank)\n- Behavioral savollar STAR metodi bilan tayyorlash\n- Mock interview o'tkazish\n- Kompaniya haqida tadqiqot qilish\n\n### Qadam 5: Taklifni Baholash\n- Oylik, bonuslar, ijtimoiy paket\n- Texnologiya stack va jamoaga mos kelish\n- O'sish imkoniyatlari\n- Kompaniya madaniyati va qadriyatlari\n\n---\n\n## O'zbekistonda IT Mehnat Bozori Trendlari 2024-2025\n\n### Eng Ko'p Talab Qilinadigan Ko'nikmalar:\n1. **Python** — Backend, Data Science, AI/ML uchun\n2. **JavaScript/TypeScript** — Frontend va Full-stack uchun\n3. **React.js** — Eng mashhur frontend framework\n4. **Cloud Services (AWS/Azure)** — Kompan"
+  },
+  {
+    "id": "kb_career_guide.txt_chunk_4",
+    "filename": "career_guide.txt",
+    "chunk_index": 4,
+    "text": "ck uchun\n3. **React.js** — Eng mashhur frontend framework\n4. **Cloud Services (AWS/Azure)** — Kompaniyalar cloudga ko'chyapti\n5. **AI/ML Integration** — LLM, RAG, AI agents\n6. **DevOps** — CI/CD, Docker, Kubernetes\n7. **Mobile (Flutter)** — Cross-platform mobile development\n\n### Oylik Darajalar (O'zbekiston, 2024-2025):\n- Junior Developer: $400-800/oy\n- Middle Developer: $800-1500/oy\n- Senior Developer: $1500-3000/oy\n- Remote (xorijiy kompaniya): $1000-5000/oy\n\n### Maslahatlar:\n- Ingliz tilini B2+ darajasiga olib chiqing — bu oylikni 2-3 baravar oshirishi mumkin\n- Open source loyihalarga hissa qo'shing\n- Texnik blog yoki YouTube kanal oching — bu sizning brandingiz\n- Mentorlik oling — tajribali dasturchilardan maslahat so'rang"
+  },
+  {
+    "id": "kb_resume_templates.txt_chunk_0",
+    "filename": "resume_templates.txt",
+    "chunk_index": 0,
+    "text": "# Rezyume Shablonlari / Resume Templates / Шаблоны резюме\n\n## ATS-Optimized Resume Structure\n\n### Standard IT Resume Template (ATS-Friendly)\n\n**FULL NAME**\nPhone: +998 XX XXX XX XX | Email: name@email.com | LinkedIn: linkedin.com/in/name | GitHub: github.com/name\nLocation: Tashkent, Uzbekistan\n\n---\n\n**PROFESSIONAL SUMMARY**\n[2-3 sentences summarizing your experience, key skills, and career objective. Use keywords from the job description.]\n\nExample for Junior Backend Developer:\n\"Motivated Computer Science graduate with hands-on experience in Python, Django, and PostgreSQL. Built 3 production-ready REST APIs during university projects. Seeking a Junior Backend Developer role to apply strong algorithmic thinking and database design skills.\"\n\nExample for Frontend Developer:\n\"Creative frontend developer with 1+ year experience building responsive web applications using React.js, TypeScript, and modern CSS. Passionate about user experience and accessibility. Looking for a frontend role at a"
+  },
+  {
+    "id": "kb_resume_templates.txt_chunk_1",
+    "filename": "resume_templates.txt",
+    "chunk_index": 1,
+    "text": "and modern CSS. Passionate about user experience and accessibility. Looking for a frontend role at a product company.\"\n\n---\n\n**TECHNICAL SKILLS**\n- Programming Languages: Python, JavaScript, TypeScript, Java\n- Frameworks: Django, FastAPI, React.js, Next.js\n- Databases: PostgreSQL, MongoDB, Redis\n- Tools: Git, Docker, Linux, CI/CD, AWS\n- Soft Skills: Teamwork, Communication, Problem-solving, Time Management\n\n---\n\n**EDUCATION**\nBachelor of Science in Computer Science\n[University Name], Tashkent, Uzbekistan\nExpected Graduation: June 2025\nGPA: 3.8/4.0\n\nRelevant Coursework: Data Structures, Algorithms, Database Systems, Web Development, Machine Learning\n\n---\n\n**PROJECTS**\n**E-commerce API** | Python, Django, PostgreSQL | github.com/name/ecommerce\n- Designed and implemented a RESTful API serving 50+ endpoints for product management, user authentication, and order processing\n- Implemented JWT-based authentication and role-based access control\n- Wrote 80+ unit tests achieving 90% code coverage"
+  },
+  {
+    "id": "kb_resume_templates.txt_chunk_2",
+    "filename": "resume_templates.txt",
+    "chunk_index": 2,
+    "text": "ased authentication and role-based access control\n- Wrote 80+ unit tests achieving 90% code coverage\n\n**Task Management App** | React.js, TypeScript, Firebase | github.com/name/taskapp\n- Built a responsive single-page application with drag-and-drop task management\n- Implemented real-time collaboration using Firebase Realtime Database\n- Deployed to Vercel with automated CI/CD pipeline\n\n---\n\n**EXPERIENCE**\nSoftware Development Intern | [Company Name] | June 2024 - August 2024\n- Developed 3 microservices using FastAPI, reducing API response time by 40%\n- Collaborated with a team of 5 developers using Agile methodology\n- Wrote technical documentation for 2 internal APIs\n\n---\n\n**CERTIFICATIONS**\n- AWS Cloud Practitioner (2024)\n- Meta Frontend Developer Professional Certificate (2024)\n\n---\n\n## ATS Tips / ATS bo'yicha maslahatlar\n\n1. Oddiy formatlash ishlating — murakkab jadvallar, rasmlar, grafik elementlardan qoching\n2. Kalit so'zlarni vakansiya tavsifidan oling va rezyumega tabiiy ravishda"
+  },
+  {
+    "id": "kb_resume_templates.txt_chunk_3",
+    "filename": "resume_templates.txt",
+    "chunk_index": 3,
+    "text": "fik elementlardan qoching\n2. Kalit so'zlarni vakansiya tavsifidan oling va rezyumega tabiiy ravishda joylashtiring\n3. PDF formatda saqlang (agar kompaniya boshqa format talab qilmasa)\n4. Har bir vakansiya uchun rezyumeni moslashtiring — universal rezyume ATS dan o'tmaydi\n5. Sana formatini standart qiling: \"June 2024 - August 2024\" yoki \"06/2024 - 08/2024\"\n6. Professional summary'da eng muhim 3-4 ko'nikma va kalit so'zlarni ishlatish kerak\n7. Tajribangizni raqamlar bilan tasdiqlang: \"40% tezlashtirdim\", \"50+ endpoint\", \"90% test coverage\"\n8. GitHub profil havolasini albatta qo'shing — bu IT sohasida eng muhim portfolio\n\n## Cover Letter Template / Muqova Xat Shabloni\n\nDear [Hiring Manager Name / Hiring Team],\n\nI am writing to express my interest in the [Position Title] role at [Company Name], as advertised on [Platform]. With my background in [relevant field] and hands-on experience in [key technologies], I am confident I can contribute meaningfully to your team.\n\nDuring my studies at [U"
+  },
+  {
+    "id": "kb_resume_templates.txt_chunk_4",
+    "filename": "resume_templates.txt",
+    "chunk_index": 4,
+    "text": "y technologies], I am confident I can contribute meaningfully to your team.\n\nDuring my studies at [University], I developed [specific project or skill] that directly aligns with your team's needs. For example, [specific achievement with measurable result].\n\nI am particularly drawn to [Company Name] because of [specific reason - company mission, product, culture]. I believe my [specific skills] combined with my passion for [relevant area] make me an excellent fit for this role.\n\nI look forward to discussing how my skills and experiences align with your team's goals.\n\nSincerely,\n[Your Name]"
+  }
+]

@@ -1,0 +1,108 @@
+# Karyera Qo'llanma / Career Guide / Карьерное руководство
+
+## LinkedIn Profil Optimallashtirish
+
+### Professional Headline (Sarlavha)
+Yaxshi: "Junior Backend Developer | Python | Django | FastAPI | Open to Opportunities"
+Yomon: "Student at XYZ University"
+
+### About Section (O'zingiz haqida)
+Qoidalar:
+1. Birinchi 3 qatorda asosiy ko'nikmalaringiz va maqsadingizni yozing
+2. Loyihalaringiz haqida qisqacha ma'lumot bering
+3. Kalit so'zlarni tabiiy ravishda joylashtiring
+4. Call to action bilan yakunlang: "Let's connect!" yoki "Open to new opportunities"
+
+Namuna:
+"Passionate about building scalable backend systems with Python and FastAPI. Currently pursuing Computer Science at [University], with hands-on experience in REST API development, PostgreSQL, and Docker.
+
+Key projects:
+🔹 E-commerce API — 50+ endpoints, JWT auth, 90% test coverage
+🔹 Real-time Chat App — WebSocket, Redis, deployed on AWS
+
+I am actively seeking Junior Backend Developer roles where I can grow and contribute to meaningful products. Let's connect!"
+
+---
+
+## Karyera Yarmarkasi Tayyorgarlik Skriptlari
+
+### Kompaniya Vakili Bilan Suhbat Skripti
+
+**Tanishish:**
+"Assalomu alaykum! Mening ismim [Ism], men [Universitet] da [Yo'nalish] yo'nalishida [Kurs]-kurs talabaman. Men sizning kompaniyangiz haqida ko'p eshitganman va [aniq sabab: masalan, sizning AI loyihalaringiz menga juda qiziq] — shu sababli men siz bilan gaplashmoqchi edim."
+
+**Savol berish:**
+1. "Sizning jamoangizda junior dasturchi qanday texnologiyalar bilan ishlaydi?"
+2. "Stajirovka dasturingiz haqida aytib bera olasizmi?"
+3. "Kompaniyangizda o'sish imkoniyatlari qanday?"
+4. "Junior dasturchilardan nimani eng ko'p kutasiz — texnik ko'nikmalarnimimi yoki o'rganish qobiliyatini?"
+
+**Yakunlash:**
+"Rahmat vaqtingiz uchun! Sizning kontaktingizni olsam bo'ladimi? LinkedIn'da bog'lanishimiz mumkinmi?"
+
+### Hackathon va Tech Event Tayyorgarlik
+
+1. **Oldindan tadqiqot qiling** — Qaysi kompaniyalar qatnashishini bilib, ularning texnologiyalarini o'rganing
+2. **Elevator pitch tayyorlang** — 30 soniyalik o'zingiz haqida qisqacha taqdimot
+3. **Portfolio/GitHub tayyor bo'lsin** — Telefondan ko'rsata olish kerak
+4. **Vizit kartochka yoki QR kod** — LinkedIn profil uchun QR kod tayyorlang
+5. **Savollar ro'yxati** — Har bir kompaniya uchun 2-3 ta savol tayyorlang
+
+---
+
+## Ish Qidirish Strategiyasi
+
+### Qadam 1: O'zini Tahlil Qilish
+- Qaysi texnologiyalarni bilaman?
+- Qaysi sohada ishlashni xohlayman?
+- Qanday ish sharoiti men uchun muhim? (remote, office, hybrid)
+- Minimum oylik kutilmam qancha?
+
+### Qadam 2: Hujjatlarni Tayyorlash
+- ATS-optimized rezyume (har bir vakansiya uchun moslashtirilgan)
+- Cover letter shablon
+- LinkedIn profil optimallashtirish
+- GitHub portfolio tozalash va README yozish
+
+### Qadam 3: Faol Qidirish
+- LinkedIn Jobs, HeadHunter, Telegram kanallarda kundalik qidirish
+- Kompaniya career page'larini to'g'ridan-to'g'ri tekshirish
+- Networking — professional meetup va eventlarga borish
+- University career center xizmatlaridan foydalanish
+
+### Qadam 4: Suhbatga Tayyorlanish
+- Texnik savollar mashq qilish (LeetCode, HackerRank)
+- Behavioral savollar STAR metodi bilan tayyorlash
+- Mock interview o'tkazish
+- Kompaniya haqida tadqiqot qilish
+
+### Qadam 5: Taklifni Baholash
+- Oylik, bonuslar, ijtimoiy paket
+- Texnologiya stack va jamoaga mos kelish
+- O'sish imkoniyatlari
+- Kompaniya madaniyati va qadriyatlari
+
+---
+
+## O'zbekistonda IT Mehnat Bozori Trendlari 2024-2025
+
+### Eng Ko'p Talab Qilinadigan Ko'nikmalar:
+1. **Python** — Backend, Data Science, AI/ML uchun
+2. **JavaScript/TypeScript** — Frontend va Full-stack uchun
+3. **React.js** — Eng mashhur frontend framework
+4. **Cloud Services (AWS/Azure)** — Kompaniyalar cloudga ko'chyapti
+5. **AI/ML Integration** — LLM, RAG, AI agents
+6. **DevOps** — CI/CD, Docker, Kubernetes
+7. **Mobile (Flutter)** — Cross-platform mobile development
+
+### Oylik Darajalar (O'zbekiston, 2024-2025):
+- Junior Developer: $400-800/oy
+- Middle Developer: $800-1500/oy
+- Senior Developer: $1500-3000/oy
+- Remote (xorijiy kompaniya): $1000-5000/oy
+
+### Maslahatlar:
+- Ingliz tilini B2+ darajasiga olib chiqing — bu oylikni 2-3 baravar oshirishi mumkin
+- Open source loyihalarga hissa qo'shing
+- Texnik blog yoki YouTube kanal oching — bu sizning brandingiz
+- Mentorlik oling — tajribali dasturchilardan maslahat so'rang

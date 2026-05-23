@@ -1,0 +1,8 @@
+streamlit
+chromadb
+pypdf
+openai
+google-generativeai
+python-dotenv
+python-telegram-bot
+numpy
