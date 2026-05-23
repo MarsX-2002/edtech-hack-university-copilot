@@ -42,12 +42,13 @@ const DASHBOARD_TRANSLATIONS = {
     light: "Yorug'lik",
     dark: "Qorong'ulik",
     welcomeTitle: "Campus Career Copilot",
-    welcomeDesc: "PDP University karyera markazi portali. Ruxsat etilgan xodimlar Google akkaunti orqali kiring.",
+    welcomeSubtitle: "Staff Dashboard",
+    welcomeDesc: "PDP University Career Center uchun AI boshqaruv paneli. Faqat ruxsat berilgan xodimlar kira oladi.",
     signInGoogle: "Google orqali kirish",
     or: "YOKI",
-    sandboxMode: "Sandbox demo rejimi (API offline)",
-    devBypassTitle: "Dasturchi bypassi (API va MB orqali)",
-    devBypassButton: "Bypass email orqali kirish",
+    sandboxMode: "demo rejimga kirish",
+    demoLabel: "demo uchun:",
+    demoLink: "demo rejim",
     recentTalent: "Yaqinda faol bo'lgan talabalar",
     recentTalentDesc: "Tasdiqlangan yutuqlarga ega eng yaxshi ishga tayyor talabalar",
     viewAll: "Barchasini ko'rish",
@@ -94,12 +95,13 @@ const DASHBOARD_TRANSLATIONS = {
     light: "Light",
     dark: "Dark",
     welcomeTitle: "Campus Career Copilot",
-    welcomeDesc: "PDP University Career Center portal. Sign in with your approved staff Google account.",
+    welcomeSubtitle: "Staff Dashboard",
+    welcomeDesc: "AI Dashboard for PDP University Career Center. Only authorized staff members can sign in.",
     signInGoogle: "Sign in with Google",
     or: "OR",
-    sandboxMode: "Enter Sandbox Demo Mode (API Offline)",
-    devBypassTitle: "Developer Bypass (Real API + DB Auth)",
-    devBypassButton: "Log In with Bypass Email",
+    sandboxMode: "enter demo mode",
+    demoLabel: "for demo:",
+    demoLink: "demo mode",
     recentTalent: "Recent Active Talent Profiles",
     recentTalentDesc: "Top job-ready students based on verified achievements",
     viewAll: "View All",
@@ -996,12 +998,31 @@ function App() {
         backgroundColor: 'var(--bg-main)',
         backgroundImage: 'radial-gradient(circle at top right, rgba(16, 185, 129, 0.08), transparent 400px), radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.05), transparent 400px)',
         fontFamily: 'var(--font-sans)',
-        padding: '20px'
+        padding: '20px',
+        position: 'relative'
       }}>
+        {/* Global Language Toggle Switch on Login Screen - Top Right */}
+        <div style={{ position: 'absolute', top: '24px', right: '24px', display: 'flex', gap: '8px', zIndex: 10 }}>
+          <button 
+            onClick={() => { setDashboardLanguage('uz'); localStorage.setItem('dashboardLanguage', 'uz'); }} 
+            className={`btn btn-outline ${dashboardLanguage === 'uz' ? 'btn-primary' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px', minWidth: '90px' }}
+          >
+            🇺🇿 O'zbekcha
+          </button>
+          <button 
+            onClick={() => { setDashboardLanguage('en'); localStorage.setItem('dashboardLanguage', 'en'); }} 
+            className={`btn btn-outline ${dashboardLanguage === 'en' ? 'btn-primary' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px', minWidth: '90px' }}
+          >
+            🇬🇧 English
+          </button>
+        </div>
+
         <div className="card" style={{
-          maxWidth: '440px',
+          maxWidth: '420px',
           width: '100%',
-          padding: '40px 32px',
+          padding: '28px 32px',
           textAlign: 'center',
           backdropFilter: 'blur(20px)',
           backgroundColor: 'var(--bg-card)',
@@ -1010,18 +1031,18 @@ function App() {
           borderRadius: 'var(--radius-lg)'
         }}>
           <div style={{
-            width: '64px',
-            height: '64px',
+            width: '56px',
+            height: '56px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--primary-glow)',
             border: '2px solid var(--primary)',
             color: 'var(--primary)',
-            fontSize: '24px',
+            fontSize: '20px',
             fontWeight: '800',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 24px auto',
+            margin: '0 auto 16px auto',
             fontFamily: 'var(--font-display)',
             boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
           }}>
@@ -1030,41 +1051,64 @@ function App() {
           
           <h2 style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '28px',
+            fontSize: '24px',
             fontWeight: '700',
             color: 'var(--text-main)',
-            margin: '0 0 8px 0',
+            margin: '0 0 4px 0',
             letterSpacing: '-0.02em'
           }}>
             {dt('welcomeTitle')}
           </h2>
+
+          <h3 style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: 'var(--primary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            margin: '0 0 16px 0'
+          }}>
+            {dt('welcomeSubtitle')}
+          </h3>
           
           <p style={{
             fontSize: '14px',
             color: 'var(--text-muted)',
-            margin: '0 0 32px 0',
+            margin: '0 0 20px 0',
             lineHeight: '1.5'
           }}>
             {dt('welcomeDesc')}
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <button
               onClick={handleGoogleLogin}
-              className="btn btn-primary"
               style={{
                 width: '100%',
                 padding: '12px 24px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px',
+                gap: '12px',
                 fontSize: '15px',
                 fontWeight: '600',
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
-                transition: 'all 0.2s ease'
+                backgroundColor: '#ffffff',
+                border: '1px solid #dadce0',
+                color: '#3c4043',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                transition: 'all 0.2s ease',
+                fontFamily: 'var(--font-sans)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
               }}
             >
               <svg style={{ width: '18px', height: '18px' }} viewBox="0 0 24 24">
@@ -1089,99 +1133,40 @@ function App() {
             </button>
 
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '16px 0',
-              color: 'var(--text-muted)',
-              fontSize: '12px'
+              marginTop: '12px',
+              fontSize: '13px',
+              color: 'var(--text-muted)'
             }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-              <span style={{ padding: '0 12px' }}>{dt('or')}</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)' }}></div>
-            </div>
-
-            <button
-              onClick={() => {
-                setIsDemoMode(true);
-                setUser({
-                  id: 0,
-                  email: 'demo@pdp.uz',
-                  name: 'Demo Administrator',
-                  role: 'super_admin',
-                  department: 'career',
-                  avatar_url: null
-                });
-                loadMockData();
-              }}
-              className="btn btn-outline"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '14px',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                borderColor: 'var(--border-color)',
-                color: 'var(--text-main)',
-                transition: 'all 0.2s ease',
-                marginBottom: '16px'
-              }}
-            >
-              {dt('sandboxMode')}
-            </button>
-
-            {/* Developer Bypass Option */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '16px',
-              border: '1px dashed var(--border-color)',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
-              textAlign: 'left'
-            }}>
-              <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {dt('devBypassTitle')}
-              </span>
-              <input
-                type="email"
-                placeholder={dashboardLanguage === 'uz' ? "Tasdiqlangan emailni kiriting (masalan: mirjalol0331@gmail.com)" : "Enter approved email (e.g. mirjalol0331@gmail.com)"}
-                id="bypass-email-input"
-                className="form-input"
-                defaultValue="mirjalol0331@gmail.com"
-                style={{ fontSize: '13px', padding: '8px 12px' }}
-              />
+              {dt('demoLabel')}{' '}
               <button
                 onClick={() => {
-                  const emailInput = document.getElementById("bypass-email-input") as HTMLInputElement;
-                  const email = emailInput?.value || "mirjalol0331@gmail.com";
-                  exchangeCode(`mock_code_${email}`);
+                  setIsDemoMode(true);
+                  setUser({
+                    id: 0,
+                    email: 'demo@pdp.uz',
+                    name: 'Demo Administrator',
+                    role: 'super_admin',
+                    department: 'career',
+                    avatar_url: null
+                  });
+                  loadMockData();
                 }}
-                className="btn btn-primary"
-                style={{ fontSize: '13px', padding: '8px 16px', cursor: 'pointer', width: '100%' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  padding: 0,
+                  fontSize: '13px',
+                  fontFamily: 'inherit'
+                }}
               >
-                {dt('devBypassButton')}
+                {dt('demoLink')}
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Global Language Toggle Switch on Login Screen */}
-        <div style={{ position: 'absolute', bottom: '20px', display: 'flex', gap: '8px', zIndex: 10 }}>
-          <button 
-            onClick={() => { setDashboardLanguage('uz'); localStorage.setItem('dashboardLanguage', 'uz'); }} 
-            className={`btn btn-outline ${dashboardLanguage === 'uz' ? 'btn-primary' : ''}`}
-            style={{ padding: '6px 12px', fontSize: '12px' }}
-          >
-            O'zbekcha
-          </button>
-          <button 
-            onClick={() => { setDashboardLanguage('en'); localStorage.setItem('dashboardLanguage', 'en'); }} 
-            className={`btn btn-outline ${dashboardLanguage === 'en' ? 'btn-primary' : ''}`}
-            style={{ padding: '6px 12px', fontSize: '12px' }}
-          >
-            English
-          </button>
         </div>
       </div>
     );

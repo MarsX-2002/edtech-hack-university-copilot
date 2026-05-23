@@ -42,4 +42,4 @@ Prompt shakllantirish: Tizim LLM'ga (Aiga) shunday yopiq buyruq beradi: "Sen uni
 Javob (Generation): AI to'g'ridan-to'g'ri va shaxsiylashtirilgan tayyor rezyumeni talabaga yuboradi.
 Ushbu arxitektura orqali siz katta mablag' sarflab maxsus AI model yaratishdan qochasiz, lekin o'z ma'lumotlaringiz asosida juda aniq ishlaydigan mukammal assistentga ega bo'lasiz.
 
-platforma uzbek tilida ishlashi shart, rus va ingliz tiliga o'tish funksiyasi bo'lishi kerak. qandaydir 
+platforma uzbek tilida ishlashi shart, rus va ingliz tiliga o'tish funksiyasi bo'lishi kerak.
