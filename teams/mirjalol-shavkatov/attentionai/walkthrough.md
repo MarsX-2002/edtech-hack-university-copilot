@@ -110,3 +110,8 @@ To enable testing the actual FastAPI backend sessions, JWT cookie issuance, rate
   ```bash
   python manage.py add-staff --email mirjalol0331@gmail.com --name "Mirjalol" --role super_admin --department career
   ```
+
+### 5. Multilingual Switcher & Labor Market Trends Widget (May 2026)
+* **Uzbek/English Toggle Switch**: Added a dynamic language switcher component to both the React sidebar footer and login screen. Toggling language updates all admin navigation, card titles, table headers, descriptions, and dashboard buttons dynamically.
+* **Labor Market Trends**: Integrated a visual bar chart widget in the Overview tab showing the top 5 trending tech skills requested in partner vacancies (e.g. Python, React, Docker, Linux, SQL), satisfying the "Mehnat Bozori Trendlari" requirement from [CAREER_ASSISTANT.md](file:///home/mikey/Desktop/buildathon-2026/teams/mirjalol-shavkatov/attentionai/CAREER_ASSISTANT.md).
+
