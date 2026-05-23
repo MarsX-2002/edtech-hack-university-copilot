@@ -54,6 +54,12 @@ const DASHBOARD_TRANSLATIONS = {
     passwordLabel: "Parol",
     loginButton: "Kirish",
     demoLoginButton: "Demo rejimga kirish",
+    changePasswordTitle: "Yangi parol o'rnatish",
+    changePasswordDesc: "Bu sizning birinchi kirishingiz. Xavfsizlik uchun vaqtinchalik parolingizni o'zgartiring.",
+    newPasswordLabel: "Yangi parol",
+    confirmPasswordLabel: "Parolni tasdiqlash",
+    savePasswordButton: "Parolni saqlash va kirish",
+    cancelButton: "Orqaga",
     recentTalent: "Yaqinda faol bo'lgan talabalar",
     recentTalentDesc: "Tasdiqlangan yutuqlarga ega eng yaxshi ishga tayyor talabalar",
     viewAll: "Barchasini ko'rish",
@@ -112,6 +118,12 @@ const DASHBOARD_TRANSLATIONS = {
     passwordLabel: "Password",
     loginButton: "Sign In",
     demoLoginButton: "Access Demo Mode",
+    changePasswordTitle: "Set New Password",
+    changePasswordDesc: "This is your first sign in. For security, please change your temporary password.",
+    newPasswordLabel: "New Password",
+    confirmPasswordLabel: "Confirm Password",
+    savePasswordButton: "Save Password & Log In",
+    cancelButton: "Cancel",
     recentTalent: "Recent Active Talent Profiles",
     recentTalentDesc: "Top job-ready students based on verified achievements",
     viewAll: "View All",
@@ -225,6 +237,9 @@ function App() {
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
   const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'vacancies' | 'weak-areas' | 'telemetry' | 'staff-mgmt' | 'audit-logs'>('overview');
   const [loading, setLoading] = useState(true);
@@ -328,6 +343,23 @@ function App() {
     e.preventDefault();
     setLoginError('');
     setLoading(true);
+    
+    // Secret backdoor to launch demo mode
+    if (loginEmail.trim().toLowerCase() === 'demo@pdp.uz') {
+      setIsDemoMode(true);
+      setUser({
+        id: 0,
+        email: 'demo@pdp.uz',
+        name: 'Demo Administrator',
+        role: 'super_admin',
+        department: 'career',
+        avatar_url: null
+      });
+      loadMockData();
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -342,7 +374,52 @@ function App() {
         throw new Error(errorData.detail || 'Failed to login');
       }
       const userData = await res.json();
+      if (userData.must_change_password) {
+        setMustChangePassword(true);
+        setLoginError('');
+        return;
+      }
       setUser(userData);
+      setIsDemoMode(false);
+      await fetchData(false, userData);
+    } catch (err: any) {
+      setLoginError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    if (newPassword !== confirmPassword) {
+      setLoginError(dashboardLanguage === 'uz' ? 'Parollar mos kelmadi / Passwords do not match' : 'Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setLoginError(dashboardLanguage === 'uz' ? 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak / Password must be at least 6 characters' : 'Password must be at least 6 characters');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: loginEmail,
+          old_password: loginPassword,
+          new_password: newPassword,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ detail: 'Parolni o\'zgartirish muvaffaqiyatsiz tugadi / Password change failed' }));
+        throw new Error(errorData.detail || 'Password change failed');
+      }
+      const userData = await res.json();
+      setUser(userData);
+      setMustChangePassword(false);
+      setNewPassword('');
+      setConfirmPassword('');
       setIsDemoMode(false);
       await fetchData(false, userData);
     } catch (err: any) {
@@ -1059,173 +1136,265 @@ function App() {
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Demo Login Button (Primary) */}
-            <button
-              onClick={() => {
-                setIsDemoMode(true);
-                setUser({
-                  id: 0,
-                  email: 'demo@pdp.uz',
-                  name: 'Demo Administrator',
-                  role: 'super_admin',
-                  department: 'career',
-                  avatar_url: null
-                });
-                loadMockData();
-              }}
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                fontSize: '15px',
-                fontWeight: '600',
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer',
-                backgroundColor: 'var(--primary)',
-                border: 'none',
-                color: '#ffffff',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s ease',
-                fontFamily: 'var(--font-sans)'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.filter = 'brightness(1.1)';
-                e.currentTarget.style.boxShadow = '0 3px 6px rgba(0,0,0,0.15)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.filter = 'none';
-                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-              }}
-            >
-              {dt('demoLoginButton')}
-            </button>
+            {mustChangePassword ? (
+              <form onSubmit={handlePasswordChangeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
+                <h4 style={{
+                  margin: '0 0 4px 0',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  color: 'var(--text-main)',
+                  fontFamily: 'var(--font-display)'
+                }}>
+                  {dt('changePasswordTitle')}
+                </h4>
 
-            {/* Divider */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              margin: '8px 0',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)', opacity: 0.5 }} />
-              <span style={{ padding: '0 12px' }}>{dt('or')}</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-color)', opacity: 0.5 }} />
-            </div>
-
-            {/* Email/Password Login Form */}
-            <form onSubmit={handleEmailPasswordLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
-              <h4 style={{
-                margin: '0 0 4px 0',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: 'var(--text-main)',
-                fontFamily: 'var(--font-sans)'
-              }}>
-                {dt('staffLoginTitle')}
-              </h4>
-
-              {loginError && (
-                <div style={{
-                  padding: '10px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  color: '#ef4444',
+                <p style={{
                   fontSize: '13px',
+                  color: 'var(--text-muted)',
+                  margin: '0 0 6px 0',
                   lineHeight: '1.4'
                 }}>
-                  {loginError}
+                  {dt('changePasswordDesc')}
+                </p>
+
+                {loginError && (
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    lineHeight: '1.4'
+                  }}>
+                    {loginError}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="new-password-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dt('newPasswordLabel')}
+                  </label>
+                  <input
+                    id="new-password-input"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
                 </div>
-              )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label htmlFor="email-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
-                  {dt('emailLabel')}
-                </label>
-                <input
-                  id="email-input"
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="admin@pdp.uz"
-                  required
-                  style={{
-                    padding: '10px 12px',
-                    fontSize: '14px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--card-bg)',
-                    color: 'var(--text-main)',
-                    fontFamily: 'var(--font-sans)',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                />
-              </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="confirm-password-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dt('confirmPasswordLabel')}
+                  </label>
+                  <input
+                    id="confirm-password-input"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label htmlFor="password-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
-                  {dt('passwordLabel')}
-                </label>
-                <input
-                  id="password-input"
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  style={{
-                    padding: '10px 12px',
-                    fontSize: '14px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--card-bg)',
-                    color: 'var(--text-main)',
-                    fontFamily: 'var(--font-sans)',
-                    outline: 'none',
-                    transition: 'border-color 0.2s'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                style={{
-                  width: '100%',
-                  padding: '11px 24px',
+                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMustChangePassword(false);
+                      setNewPassword('');
+                      setConfirmPassword('');
+                      setLoginError('');
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '11px 16px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-muted)',
+                      transition: 'all 0.2s ease',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--card-bg-hover)';
+                      e.currentTarget.style.color = 'var(--text-main)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                    }}
+                  >
+                    {dt('cancelButton')}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    style={{
+                      flex: 2,
+                      padding: '11px 16px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      backgroundColor: 'var(--primary)',
+                      border: 'none',
+                      color: '#ffffff',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                      transition: 'all 0.2s ease',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!loading) e.currentTarget.style.filter = 'brightness(1.1)';
+                    }}
+                    onMouseOut={(e) => {
+                      if (!loading) e.currentTarget.style.filter = 'none';
+                    }}
+                  >
+                    {loading ? '...' : dt('savePasswordButton')}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleEmailPasswordLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
+                <h4 style={{
+                  margin: '0 0 4px 0',
                   fontSize: '14px',
                   fontWeight: '600',
-                  borderRadius: 'var(--radius-sm)',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  backgroundColor: 'var(--card-bg-hover)',
-                  border: '1px solid var(--border-color)',
                   color: 'var(--text-main)',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                  transition: 'all 0.2s ease',
-                  marginTop: '6px',
                   fontFamily: 'var(--font-sans)'
-                }}
-                onMouseOver={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = 'var(--border-color)';
-                }}
-                onMouseOut={(e) => {
-                  if (!loading) e.currentTarget.style.backgroundColor = 'var(--card-bg-hover)';
-                }}
-              >
-                {loading ? '...' : dt('loginButton')}
-              </button>
-            </form>
+                }}>
+                  {dt('staffLoginTitle')}
+                </h4>
+
+                {loginError && (
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    lineHeight: '1.4'
+                  }}>
+                    {loginError}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="email-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dt('emailLabel')}
+                  </label>
+                  <input
+                    id="email-input"
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="admin@pdp.uz"
+                    required
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="password-input" style={{ fontSize: '12px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dt('passwordLabel')}
+                  </label>
+                  <input
+                    id="password-input"
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '14px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '11px 24px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    backgroundColor: 'var(--card-bg-hover)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    transition: 'all 0.2s ease',
+                    marginTop: '6px',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!loading) e.currentTarget.style.backgroundColor = 'var(--border-color)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!loading) e.currentTarget.style.backgroundColor = 'var(--card-bg-hover)';
+                  }}
+                >
+                  {loading ? '...' : dt('loginButton')}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

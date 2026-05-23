@@ -27,6 +27,33 @@ VALID_ROLES = {"super_admin", "career_staff", "academic_staff", "teacher", "view
 VALID_DEPARTMENTS = {"career", "academic", "teaching"}
 JWT_ALGORITHM = "HS256"
 
+def hash_password(password: str) -> str:
+    """Hash password using PBKDF2 with SHA-256 and a random salt."""
+    salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        100000
+    )
+    return f"{salt}${key.hex()}"
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify password against PBKDF2 hash."""
+    if not hashed:
+        return False
+    try:
+        salt, key_hex = hashed.split('$')
+        key = hashlib.pbkdf2_hmac(
+            'sha256',
+            password.encode('utf-8'),
+            salt.encode('utf-8'),
+            100000
+        )
+        return key.hex() == key_hex
+    except Exception:
+        return False
+
 # Cookie names
 ACCESS_COOKIE = "pdp_access_token"
 REFRESH_COOKIE = "pdp_refresh_token"

@@ -169,7 +169,9 @@ def init_db():
         department TEXT NOT NULL DEFAULT 'career',
         is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_login TIMESTAMP
+        last_login TIMESTAMP,
+        password_hash TEXT,
+        must_change_password INTEGER DEFAULT 1
     );
     """)
 
@@ -212,6 +214,16 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);")
 
+    # Migration: Add password_hash and must_change_password columns if they don't exist
+    try:
+        cursor.execute("ALTER TABLE staff_users ADD COLUMN password_hash TEXT;")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    try:
+        cursor.execute("ALTER TABLE staff_users ADD COLUMN must_change_password INTEGER DEFAULT 1;")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     conn.commit()
 
     # ── Bootstrap initial admin from env ──
@@ -222,25 +234,43 @@ def init_db():
 
 def _bootstrap_initial_admin(conn):
     """Seeds the first super_admin from INITIAL_ADMIN_EMAIL env if no super_admin exists."""
-    from src.config import INITIAL_ADMIN_EMAIL
+    from src.config import INITIAL_ADMIN_EMAIL, ADMIN_PASSWORD
     if not INITIAL_ADMIN_EMAIL:
         return
 
     cursor = conn.cursor()
-    # Check if any super_admin exists
+    from src.auth import hash_password
+    pwd_hash = hash_password(ADMIN_PASSWORD)
+
+    # Check if this email already exists
+    cursor.execute("SELECT id, password_hash FROM staff_users WHERE email = ?;", (INITIAL_ADMIN_EMAIL,))
+    row = cursor.fetchone()
+    
+    if row:
+        # If exists but password_hash is not set, update it
+        if not row["password_hash"]:
+            cursor.execute(
+                "UPDATE staff_users SET password_hash = ?, must_change_password = 0 WHERE id = ?;",
+                (pwd_hash, row["id"])
+            )
+            conn.commit()
+            cursor.execute(
+                """INSERT INTO audit_logs (actor_type, actor_id, action, details)
+                   VALUES ('system', 'bootstrap', 'admin_password_updated', ?);""",
+                (f"Updated initial super_admin password hash: {INITIAL_ADMIN_EMAIL}",)
+            )
+            conn.commit()
+        return
+
+    # Check if any super_admin exists at all
     cursor.execute("SELECT COUNT(*) as cnt FROM staff_users WHERE role = 'super_admin';")
     if cursor.fetchone()["cnt"] > 0:
         return  # Already have a super_admin, never overwrite
 
-    # Check if this email already exists
-    cursor.execute("SELECT id FROM staff_users WHERE email = ?;", (INITIAL_ADMIN_EMAIL,))
-    if cursor.fetchone():
-        return  # Email already exists
-
     cursor.execute(
-        """INSERT INTO staff_users (email, name, role, department, is_active)
-           VALUES (?, ?, 'super_admin', 'career', 1);""",
-        (INITIAL_ADMIN_EMAIL, "Initial Admin")
+        """INSERT INTO staff_users (email, name, role, department, is_active, password_hash, must_change_password)
+           VALUES (?, ?, 'super_admin', 'career', 1, ?, 0);""",
+        (INITIAL_ADMIN_EMAIL, "Initial Admin", pwd_hash)
     )
     conn.commit()
 

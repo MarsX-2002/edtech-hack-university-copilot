@@ -20,7 +20,7 @@ from src.auth import (
     create_access_token, create_refresh_token, rotate_refresh_token,
     revoke_all_tokens, set_auth_cookies, clear_auth_cookies,
     exchange_google_code, validate_staff_login, audit_log, audit_from_request,
-    ACCESS_COOKIE, REFRESH_COOKIE
+    ACCESS_COOKIE, REFRESH_COOKIE, hash_password, verify_password
 )
 
 app = FastAPI(title="PDP University Career Center - Admin Analytics API")
@@ -43,6 +43,11 @@ app.add_middleware(
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class ChangePasswordRequest(BaseModel):
+    email: str
+    old_password: str
+    new_password: str
 
 class StaffCreateRequest(BaseModel):
     email: str
@@ -74,14 +79,6 @@ async def auth_login(request: Request, body: LoginRequest, response: Response):
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
         
-    # Check password first
-    if password != ADMIN_PASSWORD:
-        audit_log("system", email, "failed_login", details="Incorrect password")
-        raise HTTPException(
-            status_code=401,
-            detail="Noto'g'ri parol. / Incorrect password."
-        )
-        
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -101,6 +98,23 @@ async def auth_login(request: Request, body: LoginRequest, response: Response):
         conn.close()
         audit_log("system", email, "failed_login", details="Account deactivated")
         raise HTTPException(status_code=403, detail="Hisob faolsizlantirilgan. / Account deactivated.")
+
+    # Check password hash in SQLite
+    if not verify_password(password, staff["password_hash"]):
+        conn.close()
+        audit_log("system", email, "failed_login", details="Incorrect password")
+        raise HTTPException(
+            status_code=401,
+            detail="Noto'g'ri parol. / Incorrect password."
+        )
+        
+    # Check if they need to change password
+    if staff["must_change_password"]:
+        conn.close()
+        return {
+            "must_change_password": True,
+            "email": staff["email"]
+        }
         
     # Update last_login
     from datetime import datetime, timezone
@@ -139,7 +153,88 @@ async def auth_login(request: Request, body: LoginRequest, response: Response):
         "name": staff_dict["name"],
         "role": staff_dict["role"],
         "department": staff_dict["department"],
-        "avatar_url": staff_dict.get("avatar_url")
+        "avatar_url": staff_dict.get("avatar_url"),
+        "must_change_password": False
+    }
+
+
+@app.post("/auth/change-password")
+@limiter.limit("10/minute")
+async def auth_change_password(request: Request, body: ChangePasswordRequest, response: Response):
+    """Change temporary password upon first login, then log in the staff user."""
+    email = body.email.strip().lower()
+    old_password = body.old_password
+    new_password = body.new_password.strip()
+    
+    if not email or not old_password or not new_password:
+        raise HTTPException(status_code=400, detail="All fields are required")
+        
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak. / New password must be at least 6 characters.")
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM staff_users WHERE LOWER(email) = ?;", (email,))
+    staff = cursor.fetchone()
+    
+    if not staff:
+        conn.close()
+        raise HTTPException(status_code=403, detail="Email address not found")
+        
+    if not staff["is_active"]:
+        conn.close()
+        raise HTTPException(status_code=403, detail="Account deactivated")
+        
+    # Verify old password
+    if not verify_password(old_password, staff["password_hash"]):
+        conn.close()
+        raise HTTPException(status_code=401, detail="Eski parol noto'g'ri. / Old password is incorrect.")
+        
+    # Hash new password and update
+    new_hash = hash_password(new_password)
+    from datetime import datetime, timezone
+    now_str = datetime.now(timezone.utc).isoformat()
+    
+    cursor.execute(
+        """UPDATE staff_users 
+           SET password_hash = ?, must_change_password = 0, last_login = ?
+           WHERE id = ?;""",
+        (new_hash, now_str, staff["id"])
+    )
+    conn.commit()
+    conn.close()
+    
+    # Issue tokens
+    access_token = create_access_token(
+        staff_id=staff["id"],
+        email=staff["email"],
+        role=staff["role"],
+        department=staff["department"]
+    )
+    refresh_token, _ = create_refresh_token(staff["id"])
+    
+    # Set cookies
+    set_auth_cookies(response, access_token, refresh_token)
+    
+    # Audit log
+    audit_log(
+        actor_type="staff",
+        actor_id=str(staff["id"]),
+        action="change_password",
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent", "")[:200]
+    )
+    
+    staff_dict = dict(staff)
+    return {
+        "id": staff_dict["id"],
+        "email": staff_dict["email"],
+        "name": staff_dict["name"],
+        "role": staff_dict["role"],
+        "department": staff_dict["department"],
+        "avatar_url": staff_dict.get("avatar_url"),
+        "must_change_password": False
     }
 
 
@@ -625,17 +720,21 @@ def add_staff(request: Request, body: StaffCreateRequest, staff = Depends(requir
         conn.close()
         raise HTTPException(status_code=400, detail="Staff user with this email already exists")
         
+    import secrets
+    temp_password = secrets.token_hex(4)
+    pwd_hash = hash_password(temp_password)
+    
     cursor.execute(
-        """INSERT INTO staff_users (email, name, role, department, is_active)
-           VALUES (?, ?, ?, ?, 1);""",
-        (email, body.name, body.role, body.department)
+        """INSERT INTO staff_users (email, name, role, department, is_active, password_hash, must_change_password)
+           VALUES (?, ?, ?, ?, 1, ?, 1);""",
+        (email, body.name, body.role, body.department, pwd_hash)
     )
     conn.commit()
     new_id = cursor.lastrowid
     conn.close()
     
     audit_from_request(request, staff, "staff_user_created", target_type="staff", target_id=str(new_id), details=f"Added staff email={email}")
-    return {"status": "ok", "id": new_id}
+    return {"status": "ok", "id": new_id, "temp_password": temp_password}
 
 
 @app.patch("/api/admin/staff/{id}")

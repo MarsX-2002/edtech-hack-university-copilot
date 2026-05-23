@@ -5,6 +5,13 @@ from src.auth import revoke_all_tokens
 
 def add_staff(email, name, role, department):
     email = email.lower().strip()
+    import secrets
+    from src.auth import hash_password
+    
+    # Generate 8-character random readable temp password
+    temp_password = secrets.token_hex(4)
+    pwd_hash = hash_password(temp_password)
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -14,12 +21,14 @@ def add_staff(email, name, role, department):
             sys.exit(1)
         
         cursor.execute(
-            """INSERT INTO staff_users (email, name, role, department, is_active)
-               VALUES (?, ?, ?, ?, 1);""",
-            (email, name, role, department)
+            """INSERT INTO staff_users (email, name, role, department, is_active, password_hash, must_change_password)
+               VALUES (?, ?, ?, ?, 1, ?, 1);""",
+            (email, name, role, department, pwd_hash)
         )
         conn.commit()
         print(f"Successfully added staff user '{name}' ({email}) with role '{role}' in department '{department}'.")
+        print(f"⚠️ TEMPORARY PASSWORD: {temp_password}")
+        print("Staff user will be forced to change this password upon their first sign in.")
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
