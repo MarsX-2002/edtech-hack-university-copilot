@@ -17,7 +17,8 @@ import {
   Moon,
   Shield,
   ClipboardList,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
@@ -30,7 +31,7 @@ const DASHBOARD_TRANSLATIONS = {
     title: "PDP University Karyera Markazi",
     subtitle: "Karyera Markazi",
     overview: "Boshqaruv paneli",
-    studentMap: "Talabalar xaritasi",
+    studentMap: "Talabalar iste'dod xaritasi",
     vacancyMatch: "Vakansiya saralovchi",
     deficitAnalyzer: "O'quv rejasi tahlilchisi",
     telemetrySafety: "Telemetriya va xavfsizlik",
@@ -69,7 +70,7 @@ const DASHBOARD_TRANSLATIONS = {
     tableReadiness: "Tayyorlik darajasi",
     tableAction: "Harakat",
     tableDetails: "Batafsil",
-    safetyCompliance: "AI Agent xavfsizligi va muvofiqligi",
+    safetyCompliance: "AI xavfsizlik holati",
     guardrailCompliance: "Xavfsizlik talablariga rioya etish darajasi",
     guardrailFailures: "Faollashgan himoya ogohlantirishlari",
     noGuardrailHits: "Hech qanday xavfsizlik ogohlantirishi qayd etilmadi.",
@@ -88,13 +89,23 @@ const DASHBOARD_TRANSLATIONS = {
     latencyDesc: "AI agentining o'rtacha javob berish tezligi",
     guardrailDesc: "Tizim tomonidan to'xtatilgan xavfli so'rovlar",
     marketTrends: "Mehnat bozori trendlari (Top ko'nikmalar)",
-    marketTrendsDesc: "Hamkor vakansiyalarida eng ko'p talab qilinayotgan texnologiyalar"
+    marketTrendsDesc: "Hamkor vakansiyalarida eng ko'p talab qilinayotgan texnologiyalar",
+    settings: "Sozlamalar",
+    settingsDesc: "Tizim tili, interfeys mavzusi va ma'lumotlarni sinxronlash sozlamalari.",
+    appLanguage: "Ilova tili",
+    appTheme: "Tizim mavzusi",
+    dataSync: "Ma'lumotlarni yangilash",
+    syncDesc: "LMS tizimidan va SQLite ma'lumotlar bazasidan oxirgi ma'lumotlarni sinxronlash.",
+    talentPoolTitle: "Talabalar ro'yxati (Talent Pool)",
+    searchPlaceholder: "Ism yoki ko'nikma bo'yicha qidirish...",
+    allRoles: "Barcha lavozimlar",
+    allReadiness: "Barcha tayyorgarlik darajalari"
   },
   en: {
     title: "PDP University Career Center",
     subtitle: "Career Center",
     overview: "Overview",
-    studentMap: "Student Skill Map",
+    studentMap: "Student Talent Map",
     vacancyMatch: "Vacancy Matchmaker",
     deficitAnalyzer: "Curriculum Deficit Analyzer",
     telemetrySafety: "Telemetry & Safety",
@@ -133,7 +144,7 @@ const DASHBOARD_TRANSLATIONS = {
     tableReadiness: "Readiness Score",
     tableAction: "Action",
     tableDetails: "Details",
-    safetyCompliance: "Harness Safety Compliance",
+    safetyCompliance: "AI Safety Status",
     guardrailCompliance: "Guardrail Compliance Rate",
     guardrailFailures: "Guardrail Failures Count",
     noGuardrailHits: "No guardrail interventions recorded.",
@@ -152,7 +163,17 @@ const DASHBOARD_TRANSLATIONS = {
     latencyDesc: "Latency of Agent reasoning steps",
     guardrailDesc: "Guardrail events flagged by agent",
     marketTrends: "Labor Market Trends (Top Skills)",
-    marketTrendsDesc: "Top technologies requested in partner vacancies"
+    marketTrendsDesc: "Top technologies requested in partner vacancies",
+    settings: "Settings",
+    settingsDesc: "Configure application language, theme, and data synchronization.",
+    appLanguage: "Application Language",
+    appTheme: "Interface Theme",
+    dataSync: "Data Synchronization",
+    syncDesc: "Fetch and synchronize latest student and vacancy data from the server.",
+    talentPoolTitle: "Student Talent Pool",
+    searchPlaceholder: "Search by name or skills...",
+    allRoles: "All Target Roles",
+    allReadiness: "All Readiness Levels"
   }
 };
 
@@ -241,7 +262,7 @@ function App() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'vacancies' | 'weak-areas' | 'telemetry' | 'staff-mgmt' | 'audit-logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'vacancies' | 'weak-areas' | 'telemetry' | 'staff-mgmt' | 'audit-logs' | 'settings'>('overview');
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -366,6 +387,7 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: loginEmail,
           password: loginPassword,
@@ -407,6 +429,7 @@ function App() {
       const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: loginEmail,
           old_password: loginPassword,
@@ -912,8 +935,11 @@ function App() {
       }
     } else {
       // API call
-      fetch(`${API_BASE_URL}/api/vacancies/${selectedVacancyId}/matching-students`)
-        .then(res => res.json())
+      apiFetch(`${API_BASE_URL}/api/vacancies/${selectedVacancyId}/matching-students`)
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load matching students');
+          return res.json();
+        })
         .then(data => {
           setVacancyMatches(data.matches);
         })
@@ -965,7 +991,7 @@ function App() {
           setStudentDetail(detail);
         }
       } else {
-        const res = await fetch(`${API_BASE_URL}/api/students/${id}`);
+        const res = await apiFetch(`${API_BASE_URL}/api/students/${id}`);
         if (!res.ok) throw new Error('Failed to load detail');
         const data = await res.json();
         setStudentDetail(data);
@@ -999,8 +1025,7 @@ function App() {
   const getReadinessColor = (score: number | null | undefined) => {
     if (score === 0 || score === null || score === undefined) return 'badge-neutral';
     if (score >= 80) return 'badge-success';
-    if (score >= 50) return 'badge-warning';
-    return 'badge-danger';
+    return 'badge-warning';
   };
 
 
@@ -1497,6 +1522,13 @@ function App() {
               {dt('auditLogs')}
             </button>
           )}
+          <button 
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <Settings size={18} />
+            {dt('settings')}
+          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -1553,58 +1585,6 @@ function App() {
               {dashboardLanguage === 'uz' ? 'API-ga ulandi' : 'Connected to API'}
             </div>
           )}
-          <button 
-            onClick={() => fetchData()} 
-            className="btn btn-outline" 
-            style={{ padding: '6px', fontSize: '11px', marginTop: '4px' }}
-            disabled={loading}
-          >
-            <RefreshCw size={12} className={loading ? 'spin-animation' : ''} />
-            {dt('syncData')}
-          </button>
-          
-          <div className="theme-switch-container">
-            <button 
-              onClick={() => setTheme('light')} 
-              className={`theme-switch-btn ${theme === 'light' ? 'active' : ''}`}
-              title="Light Theme"
-            >
-              <Sun size={14} />
-              <span>{dt('light')}</span>
-            </button>
-            <button 
-              onClick={() => setTheme('dark')} 
-              className={`theme-switch-btn ${theme === 'dark' ? 'active' : ''}`}
-              title="Dark Theme"
-            >
-              <Moon size={14} />
-              <span>{dt('dark')}</span>
-            </button>
-          </div>
-
-          {/* Sidebar Language switcher */}
-          <div className="theme-switch-container" style={{ marginTop: '4px' }}>
-            <button 
-              onClick={() => {
-                setDashboardLanguage('uz');
-                localStorage.setItem('dashboardLanguage', 'uz');
-              }} 
-              className={`theme-switch-btn ${dashboardLanguage === 'uz' ? 'active' : ''}`}
-              title="O'zbek tili"
-            >
-              <span>UZB</span>
-            </button>
-            <button 
-              onClick={() => {
-                setDashboardLanguage('en');
-                localStorage.setItem('dashboardLanguage', 'en');
-              }} 
-              className={`theme-switch-btn ${dashboardLanguage === 'en' ? 'active' : ''}`}
-              title="English"
-            >
-              <span>ENG</span>
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -1622,15 +1602,17 @@ function App() {
               {activeTab === 'telemetry' && dt('telemetrySafety')}
               {activeTab === 'staff-mgmt' && dt('staffAllowlist')}
               {activeTab === 'audit-logs' && dt('auditLogs')}
+              {activeTab === 'settings' && dt('settings')}
             </h2>
             <p>
               {activeTab === 'overview' && (dashboardLanguage === 'uz' ? 'Real vaqtdagi samaradorlik va karyerani rivojlantirish ko\'rsatkichlari.' : 'Real-time performance metrics and career development insights.')}
               {activeTab === 'students' && (dashboardLanguage === 'uz' ? 'Talabalarning tasdiqlangan ko\'nikmalari, maqsadlari va tayyorlik darajalarini kuzatish.' : 'Track student verified skills, target roles, and readiness scores.')}
               {activeTab === 'vacancies' && (dashboardLanguage === 'uz' ? 'Talabalar va hamkor vakansiyalari o\'rtasida sun\'iy intellektga asoslangan moslashtirish.' : 'Perform RAG-driven matches between student profiles and vacancies.')}
-              {activeTab === 'weak-areas' && (dashboardLanguage === 'uz' ? 'Talaba profillaridan kelib chiqqan holda, o\'quv dasturidagi kamchiliklarni aniqlash.' : 'Identify critical skill gaps and curricular weakness areas.')}
+              {activeTab === 'weak-areas' && (dashboardLanguage === 'uz' ? 'Talabalar ko\'nikmalari va ish beruvchilar vakansiyalari o\'rtasidagi tafovutlar.' : 'skills missing across students vs employer vacancies.')}
               {activeTab === 'telemetry' && (dashboardLanguage === 'uz' ? 'Agent jurnallari, tezlik ko\'rsatkichlari va xavfsizlik holati.' : 'Verify agent security, guardrails compliance, and latency metrics.')}
               {activeTab === 'staff-mgmt' && (dashboardLanguage === 'uz' ? 'Tizimdan foydalanish huquqiga ega xodimlar va ularning rollarini boshqarish.' : 'Manage authorized staff emails, roles, and department access control.')}
               {activeTab === 'audit-logs' && (dashboardLanguage === 'uz' ? 'Tizimdagi barcha ma\'muriy harakatlar jurnali.' : 'View access and administrative action logs for compliance and security.')}
+              {activeTab === 'settings' && dt('settingsDesc')}
             </p>
           </div>
           <div className="flex-row-gap">
@@ -1644,48 +1626,48 @@ function App() {
           <div className="spinner"></div>
         ) : (
           <>
-            {/* Overview / KPI Widgets */}
-            <section className="metrics-grid">
-              <div className="metric-card">
-                <div className="metric-header">
-                  <span className="metric-title">{dt('totalStudents')}</span>
-                  <div className="metric-icon-wrapper"><Users size={16} /></div>
-                </div>
-                <h3 className="metric-value">{stats.total_students}</h3>
-                <p className="metric-desc">{dt('registeredViaBot')}</p>
-              </div>
-
-              <div className="metric-card success-border">
-                <div className="metric-header">
-                  <span className="metric-title">{dt('activeSeekers')}</span>
-                  <div className="metric-icon-wrapper"><Briefcase size={16} /></div>
-                </div>
-                <h3 className="metric-value">{stats.active_seekers}</h3>
-                <p className="metric-desc">{dt('hasTargetRole')}</p>
-              </div>
-
-              <div className="metric-card warning-border">
-                <div className="metric-header">
-                  <span className="metric-title">{dt('avgResponseTime')}</span>
-                  <div className="metric-icon-wrapper"><Clock size={16} /></div>
-                </div>
-                <h3 className="metric-value">{stats.avg_latency_sec}s</h3>
-                <p className="metric-desc">{dt('latencyDesc')}</p>
-              </div>
-
-              <div className="metric-card danger-border">
-                <div className="metric-header">
-                  <span className="metric-title">{dt('safetyFlags')}</span>
-                  <div className="metric-icon-wrapper"><ShieldAlert size={16} /></div>
-                </div>
-                <h3 className="metric-value">{stats.critical_risks}</h3>
-                <p className="metric-desc">{dt('guardrailDesc')}</p>
-              </div>
-            </section>
-
             {/* TAB: OVERVIEW */}
             {activeTab === 'overview' && (
-              <div className="dashboard-grid">
+              <>
+                {/* Overview / KPI Widgets */}
+                <section className="metrics-grid">
+                  <div className="metric-card">
+                    <div className="metric-header">
+                      <span className="metric-title">{dt('totalStudents')}</span>
+                      <div className="metric-icon-wrapper"><Users size={16} /></div>
+                    </div>
+                    <h3 className="metric-value">{stats.total_students}</h3>
+                    <p className="metric-desc">{dt('registeredViaBot')}</p>
+                  </div>
+
+                  <div className="metric-card success-border">
+                    <div className="metric-header">
+                      <span className="metric-title">{dt('activeSeekers')}</span>
+                      <div className="metric-icon-wrapper"><Briefcase size={16} /></div>
+                    </div>
+                    <h3 className="metric-value">{stats.active_seekers}</h3>
+                    <p className="metric-desc">{dt('hasTargetRole')}</p>
+                  </div>
+
+                  <div className="metric-card warning-border">
+                    <div className="metric-header">
+                      <span className="metric-title">{dt('avgResponseTime')}</span>
+                      <div className="metric-icon-wrapper"><Clock size={16} /></div>
+                    </div>
+                    <h3 className="metric-value">{stats.avg_latency_sec && stats.avg_latency_sec !== 0 ? `${stats.avg_latency_sec}s` : '—'}</h3>
+                    <p className="metric-desc">{dt('latencyDesc')}</p>
+                  </div>
+
+                  <div className="metric-card danger-border">
+                    <div className="metric-header">
+                      <span className="metric-title">{dt('safetyFlags')}</span>
+                      <div className="metric-icon-wrapper"><ShieldAlert size={16} /></div>
+                    </div>
+                    <h3 className="metric-value">{stats.critical_risks}</h3>
+                    <p className="metric-desc">{dt('guardrailDesc')}</p>
+                  </div>
+                </section>
+                <div className="dashboard-grid">
                 {/* Left Side: Summary Lists */}
                 <div className="card">
                   <div className="card-header">
@@ -1839,6 +1821,7 @@ function App() {
                   </div>
                 </div>
               </div>
+              </>  
             )}
 
             {/* TAB: STUDENT SKILL MAP */}
@@ -1945,7 +1928,7 @@ function App() {
                               className="btn btn-outline" 
                               style={{ padding: '6px 12px', fontSize: '12px' }}
                             >
-                              {dashboardLanguage === 'uz' ? 'Profilni ko\'rish' : 'Explore Profile'}
+                               {dashboardLanguage === 'uz' ? 'Profilni ochish' : 'Open Profile'}
                             </button>
                           </td>
                         </tr>
@@ -2126,7 +2109,7 @@ function App() {
                 <div className="card-header">
                   <div>
                     <h3>Talent Deficit Analysis</h3>
-                    <p>Aggregated missing skills based on student target roles vs active employer vacancies</p>
+                    <p>{dashboardLanguage === 'uz' ? "Talabalar ko'nikmalari va ish beruvchilar vakansiyalari o'rtasidagi tafovutlar." : "skills missing across students vs employer vacancies."}</p>
                   </div>
                 </div>
 
@@ -2182,7 +2165,7 @@ function App() {
             )}
 
             {/* TAB: TELEMETRY */}
-            {activeTab === 'telemetry' && (
+            {activeTab === 'telemetry' && user?.role === 'super_admin' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="dashboard-grid">
                   {/* Latency and Token Usage */}
@@ -2641,6 +2624,94 @@ function App() {
                       </button>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SETTINGS */}
+            {activeTab === 'settings' && (
+              <div className="card" style={{ maxWidth: '600px', margin: '0 auto', padding: '28px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  
+                  {/* Language Setting */}
+                  <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 600 }}>
+                      🌐 {dashboardLanguage === 'uz' ? 'Ilova tili' : 'Application Language'}
+                    </h4>
+                    <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {dashboardLanguage === 'uz' ? 'Dashboard interfeysi va matnlar tilini tanlang.' : 'Select the language for the dashboard interface and translations.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button
+                        onClick={() => {
+                          setDashboardLanguage('uz');
+                          localStorage.setItem('dashboardLanguage', 'uz');
+                        }}
+                        className={`btn ${dashboardLanguage === 'uz' ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        🇺🇿 O\'zbekcha
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDashboardLanguage('en');
+                          localStorage.setItem('dashboardLanguage', 'en');
+                        }}
+                        className={`btn ${dashboardLanguage === 'en' ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        🇬🇧 English
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Theme Setting */}
+                  <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 600 }}>
+                      🎨 {dashboardLanguage === 'uz' ? 'Tizim mavzusi' : 'Interface Theme'}
+                    </h4>
+                    <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {dashboardLanguage === 'uz' ? 'Ilovaning ko\'rinishini o\'zingizga moslang.' : 'Adjust the visual appearance of the application.'}
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button
+                        onClick={() => setTheme('light')}
+                        className={`btn ${theme === 'light' ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        <Sun size={16} />
+                        {dashboardLanguage === 'uz' ? 'Yorug\'lik' : 'Light Mode'}
+                      </button>
+                      <button
+                        onClick={() => setTheme('dark')}
+                        className={`btn ${theme === 'dark' ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        <Moon size={16} />
+                        {dashboardLanguage === 'uz' ? 'Qorong\'ulik' : 'Dark Mode'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Sync Setting */}
+                  <div>
+                    <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px', fontWeight: 600 }}>
+                      🔄 {dt('dataSync')}
+                    </h4>
+                    <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {dt('syncDesc')}
+                    </p>
+                    <button
+                      onClick={() => fetchData()}
+                      className="btn btn-primary"
+                      style={{ width: '100%', padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      disabled={loading}
+                    >
+                      <RefreshCw size={16} className={loading ? 'spin-animation' : ''} />
+                      {dt('syncData')}
+                    </button>
+                  </div>
+
                 </div>
               </div>
             )}

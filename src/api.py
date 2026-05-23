@@ -31,9 +31,15 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS restricted to DASHBOARD_URL
+origins = [DASHBOARD_URL]
+if "localhost" in DASHBOARD_URL:
+    origins.append(DASHBOARD_URL.replace("localhost", "127.0.0.1"))
+elif "127.0.0.1" in DASHBOARD_URL:
+    origins.append(DASHBOARD_URL.replace("127.0.0.1", "localhost"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[DASHBOARD_URL],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

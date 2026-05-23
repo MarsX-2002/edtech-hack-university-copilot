@@ -231,6 +231,10 @@ def init_db():
 
     conn.close()
 
+    # ── Auto-migrate legacy students JSON to SQLite ──
+    from src.migrate_students import auto_migrate
+    auto_migrate()
+
 
 def _bootstrap_initial_admin(conn):
     """Seeds the first super_admin from INITIAL_ADMIN_EMAIL env if no super_admin exists."""

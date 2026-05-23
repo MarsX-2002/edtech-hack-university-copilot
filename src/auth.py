@@ -201,7 +201,7 @@ def revoke_all_tokens(staff_id: int):
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
     """Set httpOnly secure cookies for both tokens."""
-    is_prod = not DASHBOARD_URL.startswith("http://localhost")
+    is_prod = not (DASHBOARD_URL.startswith("http://localhost") or DASHBOARD_URL.startswith("http://127.0.0.1"))
 
     response.set_cookie(
         key=ACCESS_COOKIE,
