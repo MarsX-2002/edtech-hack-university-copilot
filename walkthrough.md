@@ -115,3 +115,9 @@ To enable testing the actual FastAPI backend sessions, JWT cookie issuance, rate
 * **Uzbek/English Toggle Switch**: Added a dynamic language switcher component to both the React sidebar footer and login screen. Toggling language updates all admin navigation, card titles, table headers, descriptions, and dashboard buttons dynamically.
 * **Labor Market Trends**: Integrated a visual bar chart widget in the Overview tab showing the top 5 trending tech skills requested in partner vacancies (e.g. Python, React, Docker, Linux, SQL), satisfying the "Mehnat Bozori Trendlari" requirement from [CAREER_ASSISTANT.md](file:///home/mikey/Desktop/buildathon-2026/teams/mirjalol-shavkatov/attentionai/CAREER_ASSISTANT.md).
 
+### 6. Polished Login View & Layout (May 2026)
+* **Simplified Authentications**: Removed the developer bypass dashboard form from the UI to ensure professional product presentation. Access remains possible programmatically via dev codes.
+* **Official Google Styling**: Integrated a clean, white, officially styled Google Sign-in button to prevent color clashing with the green background.
+* **Language Switcher Position**: Relocated the language toggle to the top-right corner of the viewport.
+* **Compact Card**: Reduced vertical padding and spacing for a cleaner, high-conversion look with updated localized PDP Career Center titles and copy.
+
