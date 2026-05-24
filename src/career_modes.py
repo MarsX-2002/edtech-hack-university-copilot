@@ -469,6 +469,13 @@ def match_vacancies(student_profile: dict) -> list[dict]:
             score += 30
         if "intern" in title_lower or "junior" in title_lower:
             score += 10
+            
+        if score > 0:
+            score = 40 + (score * 0.45)
+        else:
+            score = 40
+            
+        score = min(88, round(score))
         scored.append((score, v, len(overlap), len(required)))
 
     scored.sort(key=lambda x: x[0], reverse=True)
@@ -519,3 +526,129 @@ Qoidalar:
         return "\n".join(parts)
     except Exception:
         return json_str
+
+def parse_resume_via_ai(text: str) -> dict:
+    """Uses Gemini/OpenAI model to parse resume text and return structured JSON."""
+    import json
+    import re
+    
+    prompt = f"""You are an advanced AI resume parsing engine.
+Extract structured profile details from the following student CV or portfolio text.
+Ensure you return a valid JSON object matching the exact schema below:
+
+{{
+  "name": "Student Full Name (First and Last)",
+  "target_role": "Target role (e.g. Backend Developer, Frontend Developer, UX/UI Designer, Mobile Developer, DevOps Engineer, Data Analyst, AI/ML Engineer)",
+  "skills": ["Skill1", "Skill2", "Skill3"],
+  "bio": "A short professional bio summary for the student",
+  "experience_summary": "A cohesive summary of the student's work history and career background, optimized for semantic search index",
+  "experiences": [
+    {{
+      "company": "Company Name",
+      "role": "Role / Position Title",
+      "start_date": "Start date in YYYY-MM format",
+      "end_date": "End date in YYYY-MM format or 'Present'",
+      "description": "Short description of duties and achievements"
+    }}
+  ],
+  "education": [
+    {{
+      "institution": "University / School name",
+      "degree": "Degree earned (e.g. B.S., M.S., High School)",
+      "field_of_study": "Major / Field of study (e.g. Computer Science)",
+      "start_date": "YYYY-MM",
+      "end_date": "YYYY-MM"
+    }}
+  ],
+  "projects": [
+    {{
+      "title": "Project Name",
+      "description": "Short description of what the student built",
+      "tech_stack": "Technologies used (comma-separated, e.g. React, Python, PostgreSQL)",
+      "project_url": "URL link (if present, else empty string)"
+    }}
+  ]
+}}
+
+Only output the raw JSON object. Do not include markdown code block syntax (like ```json ... ```).
+If any field is missing or cannot be inferred, provide an empty list/string.
+
+Resume Text:
+{text}
+"""
+    try:
+        raw_res = call_llm(prompt, temperature=0.1)
+        clean_res = raw_res.strip()
+        if clean_res.startswith("```"):
+            clean_res = re.sub(r"^```[a-zA-Z]*\n", "", clean_res)
+            clean_res = re.sub(r"\n```$", "", clean_res).strip()
+            
+        return json.loads(clean_res)
+    except Exception as e:
+        print(f"Resume parsing failed: {e}")
+        return {
+            "name": "Unknown",
+            "target_role": "",
+            "skills": [],
+            "bio": "",
+            "experience_summary": "",
+            "experiences": [],
+            "education": [],
+            "projects": []
+        }
+
+def calculate_profile_readiness_score(student_id: int) -> int:
+    """Computes a student's career readiness score (0-100) using Gemini AI analysis of their skills, projects, and experiences."""
+    from src.db import get_student_profile_full
+    
+    student = get_student_profile_full(student_id)
+    if not student:
+        return 0
+        
+    role = student.get("target_role", "Developer")
+    skills = [s["skill_name"] for s in student.get("student_skills", [])]
+    exps = student.get("experiences", [])
+    projs = student.get("projects", [])
+    
+    exp_summary = "\n".join([f"- {e.get('role')} at {e.get('company')} ({e.get('start_date')} to {e.get('end_date')}): {e.get('description')}" for e in exps])
+    proj_summary = "\n".join([f"- {p.get('title')} ({p.get('tech_stack')}): {p.get('description')}" for p in projs])
+    
+    prompt = f"""You are a professional IT technical recruiter.
+Evaluate the career readiness of the following student profile for their target role of '{role}'.
+Provide a single numeric score between 0 and 100 based on their experience, verified skills, and projects.
+
+Student Profile:
+Target Role: {role}
+Skills: {', '.join(skills)}
+Experience:
+{exp_summary}
+
+Projects:
+{proj_summary}
+
+Scoring criteria:
+- 0-30: Incomplete profile, lacks basic projects or skills in target role
+- 31-60: Standard student/academic profile, has some projects and skills but no professional experience or deep alignment
+- 61-80: Solid readiness, has several relevant projects, key target skills, and internships/freelance work
+- 81-100: Exceptional readiness, has professional experience, highly relevant projects, and complete technical skill alignment
+
+Only output the raw integer score (between 0 and 100). Do not write any other explanation or text.
+"""
+    try:
+        raw_res = call_llm(prompt, temperature=0.1)
+        import re
+        match = re.search(r'\d+', raw_res)
+        if match:
+            score = int(match.group())
+            return min(max(score, 0), 100)
+    except Exception as e:
+        print(f"Failed to calculate AI readiness score: {e}")
+        
+    # Fallback to simple deterministic formula
+    score = 10
+    if role: score += 10
+    score += min(len(skills) * 5, 25)
+    score += min(len(exps) * 15, 30)
+    score += min(len(projs) * 10, 25)
+    return min(score, 100)
+

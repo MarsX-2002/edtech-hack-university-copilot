@@ -131,7 +131,6 @@ def init_db():
 
     # ──────────────── AUTH TABLES ────────────────
 
-    # 8. Students Table (replaces students.json)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,8 +149,99 @@ def init_db():
         language TEXT DEFAULT 'uz',
         lms_verification_status TEXT DEFAULT 'pending',
         is_active INTEGER DEFAULT 1,
+        consent_opt_in INTEGER DEFAULT 0,
+        profile_completed INTEGER DEFAULT 0,
+        consent_given_at TIMESTAMP,
+        consent_revoked_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # 8b. Talent Profiles Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS talent_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER UNIQUE NOT NULL,
+        bio TEXT,
+        experience_summary TEXT,
+        video_intro_url TEXT,
+        resume_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+    """)
+
+    # 8c. Student Skills Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS student_skills (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        skill_name TEXT NOT NULL,
+        is_verified INTEGER DEFAULT 0,
+        score REAL DEFAULT 0.0,
+        UNIQUE(student_id, skill_name),
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+    """)
+
+    # 8d. Experiences Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS experiences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        company TEXT NOT NULL,
+        role TEXT NOT NULL,
+        start_date TEXT,
+        end_date TEXT,
+        description TEXT,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+    """)
+
+    # 8e. Education Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS education (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        institution TEXT NOT NULL,
+        degree TEXT NOT NULL,
+        field_of_study TEXT,
+        start_date TEXT,
+        end_date TEXT,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+    """)
+
+    # 8f. Projects Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS projects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        tech_stack TEXT,
+        project_url TEXT,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+    """)
+
+    # 8g. Intro Requests Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS intro_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employer_id INTEGER NOT NULL,
+        student_id INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending_staff_approval',
+        message_from_employer TEXT,
+        staff_decision_by INTEGER,
+        staff_decision_notes TEXT,
+        student_decision_timestamp TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (employer_id) REFERENCES staff_users(id) ON DELETE CASCADE,
+        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
     );
     """)
 
@@ -172,6 +262,22 @@ def init_db():
         last_login TIMESTAMP,
         password_hash TEXT,
         must_change_password INTEGER DEFAULT 1
+    );
+    """)
+
+    # 9b. Employers (company details & approval status)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS employers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_user_id INTEGER UNIQUE,
+        company_name TEXT NOT NULL,
+        contact_name TEXT NOT NULL,
+        contact_email TEXT UNIQUE NOT NULL,
+        contact_phone TEXT,
+        status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+        reason_for_joining TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (staff_user_id) REFERENCES staff_users(id) ON DELETE CASCADE
     );
     """)
 
@@ -213,6 +319,27 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_actor ON audit_logs(actor_type, actor_id);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_skills_student ON student_skills(student_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_exp_student ON experiences(student_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_edu_student ON education(student_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_proj_student ON projects(student_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_intro_employer ON intro_requests(employer_id);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_intro_student ON intro_requests(student_id);")
+
+    # Migration: Add columns to existing students table if they don't exist
+    try:
+        cursor.execute("PRAGMA table_info(students);")
+        columns = [row["name"] for row in cursor.fetchall()]
+        if "consent_opt_in" not in columns:
+            cursor.execute("ALTER TABLE students ADD COLUMN consent_opt_in INTEGER DEFAULT 0;")
+        if "profile_completed" not in columns:
+            cursor.execute("ALTER TABLE students ADD COLUMN profile_completed INTEGER DEFAULT 0;")
+        if "consent_given_at" not in columns:
+            cursor.execute("ALTER TABLE students ADD COLUMN consent_given_at TIMESTAMP;")
+        if "consent_revoked_at" not in columns:
+            cursor.execute("ALTER TABLE students ADD COLUMN consent_revoked_at TIMESTAMP;")
+    except Exception:
+        pass
 
     # Migration: Add password_hash and must_change_password columns if they don't exist
     try:
@@ -221,6 +348,12 @@ def init_db():
         pass  # Column already exists
     try:
         cursor.execute("ALTER TABLE staff_users ADD COLUMN must_change_password INTEGER DEFAULT 1;")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+        
+    # Migration: Add reason_for_joining to employers if not exists
+    try:
+        cursor.execute("ALTER TABLE employers ADD COLUMN reason_for_joining TEXT;")
     except sqlite3.OperationalError:
         pass  # Column already exists
 
@@ -234,6 +367,7 @@ def init_db():
     # ── Auto-migrate legacy students JSON to SQLite ──
     from src.migrate_students import auto_migrate
     auto_migrate()
+
 
 
 def _bootstrap_initial_admin(conn):
@@ -444,4 +578,140 @@ def update_message_telemetry(message_id: int, content: str = None, latency_ms: i
         cursor.execute(query, tuple(params))
         conn.commit()
     conn.close()
+
+def get_student_profile_full(student_id: int) -> dict:
+    """Gets complete student profile data including education, experience, projects, skills."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 1. Base student record
+    cursor.execute("SELECT * FROM students WHERE id = ?;", (student_id,))
+    student_row = cursor.fetchone()
+    if not student_row:
+        conn.close()
+        return {}
+    student = dict(student_row)
+    
+    # 2. Talent profile metadata
+    cursor.execute("SELECT * FROM talent_profiles WHERE student_id = ?;", (student_id,))
+    profile_row = cursor.fetchone()
+    student["profile"] = dict(profile_row) if profile_row else {}
+    
+    # 3. Experiences
+    cursor.execute("SELECT * FROM experiences WHERE student_id = ? ORDER BY id DESC;", (student_id,))
+    student["experiences"] = [dict(r) for r in cursor.fetchall()]
+    
+    # 4. Education
+    cursor.execute("SELECT * FROM education WHERE student_id = ? ORDER BY id DESC;", (student_id,))
+    student["education"] = [dict(r) for r in cursor.fetchall()]
+    
+    # 5. Projects
+    cursor.execute("SELECT * FROM projects WHERE student_id = ? ORDER BY id DESC;", (student_id,))
+    student["projects"] = [dict(r) for r in cursor.fetchall()]
+    
+    # 6. Student skills
+    cursor.execute("SELECT * FROM student_skills WHERE student_id = ? ORDER BY id ASC;", (student_id,))
+    student["student_skills"] = [dict(r) for r in cursor.fetchall()]
+    
+    conn.close()
+    return student
+
+def get_student_profile_full_by_telegram_id(telegram_id: int) -> dict:
+    """Gets complete student profile data by telegram_user_id."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM students WHERE telegram_user_id = ?;", (str(telegram_id),))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return {}
+    return get_student_profile_full(row["id"])
+
+def save_student_profile_full(telegram_id: int, data: dict):
+    """Saves or updates complete student profile data (for AI resume parser / manual confirm)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get student row ID
+    cursor.execute("SELECT id FROM students WHERE telegram_user_id = ?;", (str(telegram_id),))
+    student_row = cursor.fetchone()
+    if not student_row:
+        conn.close()
+        raise ValueError(f"Student with telegram_id {telegram_id} does not exist.")
+    student_id = student_row["id"]
+    
+    # 1. Update basic fields in students table
+    fields = []
+    values = []
+    for key in ["name", "university", "faculty", "year", "target_role", "skills", "readiness_score", "consent_opt_in", "profile_completed"]:
+        if key in data:
+            fields.append(f"{key} = ?")
+            values.append(data[key])
+    if fields:
+        fields.append("updated_at = ?")
+        values.append(datetime.now().isoformat())
+        values.append(student_id)
+        cursor.execute(f"UPDATE students SET {', '.join(fields)} WHERE id = ?;", tuple(values))
+        
+    # 2. Update talent_profiles table
+    profile = data.get("profile", {})
+    cursor.execute("SELECT id FROM talent_profiles WHERE student_id = ?;", (student_id,))
+    existing_p = cursor.fetchone()
+    if existing_p:
+        cursor.execute(
+            """UPDATE talent_profiles 
+               SET bio = ?, experience_summary = ?, video_intro_url = ?, resume_url = ?, updated_at = ? 
+               WHERE student_id = ?;""",
+            (profile.get("bio"), profile.get("experience_summary"), profile.get("video_intro_url"), profile.get("resume_url"), datetime.now().isoformat(), student_id)
+        )
+    else:
+        cursor.execute(
+            """INSERT INTO talent_profiles (student_id, bio, experience_summary, video_intro_url, resume_url) 
+               VALUES (?, ?, ?, ?, ?);""",
+            (student_id, profile.get("bio"), profile.get("experience_summary"), profile.get("video_intro_url"), profile.get("resume_url"))
+        )
+        
+    # 3. Update experiences
+    if "experiences" in data:
+        cursor.execute("DELETE FROM experiences WHERE student_id = ?;", (student_id,))
+        for exp in data["experiences"]:
+            cursor.execute(
+                """INSERT INTO experiences (student_id, company, role, start_date, end_date, description) 
+                   VALUES (?, ?, ?, ?, ?, ?);""",
+                (student_id, exp.get("company"), exp.get("role"), exp.get("start_date"), exp.get("end_date"), exp.get("description"))
+            )
+            
+    # 4. Update education
+    if "education" in data:
+        cursor.execute("DELETE FROM education WHERE student_id = ?;", (student_id,))
+        for edu in data["education"]:
+            cursor.execute(
+                """INSERT INTO education (student_id, institution, degree, field_of_study, start_date, end_date) 
+                   VALUES (?, ?, ?, ?, ?, ?);""",
+                (student_id, edu.get("institution"), edu.get("degree"), edu.get("field_of_study"), edu.get("start_date"), edu.get("end_date"))
+            )
+            
+    # 5. Update projects
+    if "projects" in data:
+        cursor.execute("DELETE FROM projects WHERE student_id = ?;", (student_id,))
+        for proj in data["projects"]:
+            cursor.execute(
+                """INSERT INTO projects (student_id, title, description, tech_stack, project_url) 
+                   VALUES (?, ?, ?, ?, ?);""",
+                (student_id, proj.get("title"), proj.get("description"), proj.get("tech_stack"), proj.get("project_url"))
+            )
+            
+    # 6. Update student_skills
+    if "student_skills" in data:
+        for skill in data["student_skills"]:
+            cursor.execute(
+                """INSERT INTO student_skills (student_id, skill_name, is_verified, score) 
+                   VALUES (?, ?, ?, ?)
+                   ON CONFLICT(student_id, skill_name) DO UPDATE SET is_verified = excluded.is_verified, score = excluded.score;""",
+                (student_id, skill.get("skill_name"), skill.get("is_verified", 0), skill.get("score", 0.0))
+            )
+            
+    conn.commit()
+    conn.close()
+
 

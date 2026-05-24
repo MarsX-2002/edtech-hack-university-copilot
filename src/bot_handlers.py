@@ -259,12 +259,248 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ──────────────── Callback Queries (Language selection) ────────────────
 
 async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handles inline button clicks (language buttons)."""
+    """Handles inline button clicks (language buttons and intro requests)."""
     query = update.callback_query
     await query.answer()
 
     data = query.data
     user = query.from_user
+
+    if data.startswith("intro_accept:") or data.startswith("intro_decline:"):
+        from src.db import get_db_connection
+        from datetime import datetime
+        req_id = int(data.split(":")[1])
+        action = "completed" if data.startswith("intro_accept:") else "declined_by_student"
+        
+        # Remove buttons from the message to prevent double action
+        await query.edit_message_reply_markup(reply_markup=None)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """SELECT ir.*, su.name as employer_name, s.language, s.name as student_name
+               FROM intro_requests ir
+               JOIN staff_users su ON ir.employer_id = su.id
+               JOIN students s ON ir.student_id = s.id
+               WHERE ir.id = ?;""",
+            (req_id,)
+        )
+        row = cursor.fetchone()
+        
+        if not row:
+            conn.close()
+            await query.message.reply_text("❌ So'rov topilmadi / Запрос не найден / Request not found.")
+            return
+            
+        lang = row["language"] or "uz"
+        emp_name = row["employer_name"]
+        
+        cursor.execute(
+            "UPDATE intro_requests SET status = ?, student_decision_timestamp = ?, updated_at = ? WHERE id = ?;",
+            (action, datetime.now().isoformat(), datetime.now().isoformat(), req_id)
+        )
+        conn.commit()
+        conn.close()
+        
+        if action == "completed":
+            if lang == "ru":
+                text_reply = f"✅ Спасибо! Ваши контакты успешно переданы представителю *{emp_name}*. Скоро они свяжутся с вами."
+            elif lang == "en":
+                text_reply = f"✅ Thank you! Your contact details have been shared with *{emp_name}*. They will reach out to you soon."
+            else: # uz
+                text_reply = f"✅ Rahmat! Sizning kontaktlaringiz *{emp_name}* kompaniyasiga yuborildi. Tez orada siz bilan bog'lanishadi."
+        else:
+            if lang == "ru":
+                text_reply = f"❌ Вы отклонили запрос от *{emp_name}*. Контакты не были переданы."
+            elif lang == "en":
+                text_reply = f"❌ You declined the introduction request from *{emp_name}*. No contacts were shared."
+            else: # uz
+                text_reply = f"❌ Siz *{emp_name}* kompaniyasining so'rovini rad etdingiz. Kontaktlaringiz yuborilmadi."
+                
+        await query.message.reply_text(text_reply, parse_mode="Markdown")
+        return
+
+    if data == "parsed_profile_confirm":
+        parsed_data = context.user_data.get("temp_parsed_profile")
+        if not parsed_data:
+            await query.message.reply_text("❌ Draft profile expired.")
+            return
+            
+        student = get_student(user.id)
+        lang = student.get("language", "uz") if student else "uz"
+        
+        if not student:
+            from src.db import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO students (telegram_user_id, name, language) VALUES (?, ?, ?);",
+                (str(user.id), parsed_data.get("name", user.full_name or "Unknown"), lang)
+            )
+            conn.commit()
+            conn.close()
+            student = get_student(user.id)
+            
+        profile_update = {
+            "name": parsed_data.get("name", student.get("name", "Unknown")),
+            "target_role": parsed_data.get("target_role", ""),
+            "skills": ", ".join(parsed_data.get("skills", [])),
+            "profile_completed": 1,
+            "profile": {
+                "bio": parsed_data.get("bio", ""),
+                "experience_summary": parsed_data.get("experience_summary", ""),
+                "video_intro_url": "",
+                "resume_url": ""
+            },
+            "experiences": parsed_data.get("experiences", []),
+            "education": parsed_data.get("education", []),
+            "projects": parsed_data.get("projects", []),
+            "student_skills": [{"skill_name": s, "is_verified": 0, "score": 50.0} for s in parsed_data.get("skills", [])]
+        }
+        
+        from src.db import save_student_profile_full, get_db_connection
+        save_student_profile_full(user.id, profile_update)
+        
+        from src.career_modes import calculate_profile_readiness_score
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM students WHERE telegram_user_id = ?;", (str(user.id),))
+        student_id = cursor.fetchone()["id"]
+        conn.close()
+        
+        readiness_score = calculate_profile_readiness_score(student_id)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE students SET readiness_score = ? WHERE id = ?;", (readiness_score, student_id))
+        conn.commit()
+        conn.close()
+        
+        from src.talent_search import index_student_profile
+        index_student_profile(student_id)
+        
+        await query.edit_message_reply_markup(reply_markup=None)
+        
+        msg = (
+            f"✅ Profilingiz muvaffaqiyatli saqlandi!\n"
+            f"Tayyorlik darajangiz (Readiness Score): *{readiness_score}%*\n\n"
+            f"Tizimda ish beruvchilar sizni qidirishi va vakansiyalarga moslashi uchun ruxsat berasizmi?\n"
+            f"Consent holatini boshqarish yoki video tanishtiruv qo'shish uchun /consent deb yozing."
+            if lang == "uz" else
+            f"✅ Профиль успешно сохранен!\n"
+            f"Ваш балл готовности (Readiness Score): *{readiness_score}%*\n\n"
+            f"Разрешаете ли вы работодателям находить ваш профиль и предлагать вакансии?\n"
+            f"Для настройки согласия или добавления видео-визитки введите /consent."
+            if lang == "ru" else
+            f"✅ Profile successfully saved!\n"
+            f"Your Readiness Score: *{readiness_score}%*\n\n"
+            f"Do you consent to let employers search your profile and match jobs?\n"
+            f"Type /consent or visit your profile to toggle employer visibility."
+        )
+        
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("✅ Ruxsat berish / Opt-in", callback_data="consent_opt_in_enable"),
+                InlineKeyboardButton("❌ Keyinroq / Skip", callback_data="consent_opt_in_skip")
+            ]
+        ])
+        
+        await query.message.reply_text(msg, reply_markup=keyboard, parse_mode="Markdown")
+        context.user_data["state"] = None
+        context.user_data.pop("temp_parsed_profile", None)
+        return
+        
+    if data == "parsed_profile_reject":
+        student = get_student(user.id)
+        lang = student.get("language", "uz") if student else "uz"
+        await query.edit_message_reply_markup(reply_markup=None)
+        msg = (
+            "❌ Rezyume tahlili bekor qilindi. Profilingiz o'zgarishsiz qoldi."
+            if lang == "uz" else
+            "❌ Анализ резюме отменен. Ваш профиль остался без изменений."
+            if lang == "ru" else
+            "❌ Resume parsing cancelled. Your profile remained unchanged."
+        )
+        await query.message.reply_text(msg, reply_markup=get_main_menu_keyboard(lang))
+        context.user_data["state"] = None
+        context.user_data.pop("temp_parsed_profile", None)
+        return
+
+    if data == "consent_opt_in_enable":
+        from src.db import get_db_connection
+        from src.talent_search import index_student_profile
+        await query.edit_message_reply_markup(reply_markup=None)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        from datetime import datetime
+        now_str = datetime.now().isoformat()
+        cursor.execute("UPDATE students SET consent_opt_in = 1, consent_given_at = ? WHERE telegram_user_id = ?;", (now_str, str(user.id)))
+        cursor.execute("SELECT id, language FROM students WHERE telegram_user_id = ?;", (str(user.id),))
+        row = cursor.fetchone()
+        conn.commit()
+        conn.close()
+        
+        lang = "uz"
+        if row:
+            student_id = row["id"]
+            lang = row["language"] or "uz"
+            index_student_profile(student_id)
+            
+        msg = (
+            "✅ Visibility yoqildi! Endi ish beruvchilar profilingizni ko'ra oladilar (aloqa ma'lumotlaringiz siz va karyera markazi tasdiqlagandan keyingina ulashiladi)."
+            if lang == "uz" else
+            "✅ Видимость включена! Теперь работодатели могут находить ваш профиль (ваши контакты откроются только после обоюдного одобрения)."
+            if lang == "ru" else
+            "✅ Visibility enabled! Employers can now discover your profile (contacts are shared only upon mutual approval)."
+        )
+        await query.message.reply_text(msg, reply_markup=get_main_menu_keyboard(lang))
+        return
+
+    if data == "consent_opt_in_disable":
+        from src.db import get_db_connection
+        from src.talent_search import remove_student_from_index
+        await query.edit_message_reply_markup(reply_markup=None)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        from datetime import datetime
+        now_str = datetime.now().isoformat()
+        cursor.execute("UPDATE students SET consent_opt_in = 0, consent_revoked_at = ? WHERE telegram_user_id = ?;", (now_str, str(user.id)))
+        cursor.execute("SELECT id, language FROM students WHERE telegram_user_id = ?;", (str(user.id),))
+        row = cursor.fetchone()
+        conn.commit()
+        conn.close()
+        
+        lang = "uz"
+        if row:
+            student_id = row["id"]
+            lang = row["language"] or "uz"
+            remove_student_from_index(student_id)
+            
+        msg = (
+            "❌ Visibility o'chirildi! Profilingiz ish beruvchilar qidiruvidan olib tashlandi."
+            if lang == "uz" else
+            "❌ Видимость отключена! Ваш профиль удален из поиска работодателей."
+            if lang == "ru" else
+            "❌ Visibility disabled! Your profile has been removed from employer search."
+        )
+        await query.message.reply_text(msg, reply_markup=get_main_menu_keyboard(lang))
+        return
+
+    if data == "consent_opt_in_skip":
+        student = get_student(user.id)
+        lang = student.get("language", "uz") if student else "uz"
+        await query.edit_message_reply_markup(reply_markup=None)
+        msg = (
+            "🔒 Visibility o'chirilgan holatda qoldi. Profilingiz faqat karyera markazi xodimlariga ko'rinadi."
+            if lang == "uz" else
+            "🔒 Видимость осталась отключенной. Ваш профиль видят только сотрудники карьерного центра."
+            if lang == "ru" else
+            "🔒 Visibility remains disabled. Your profile is only visible to career center staff."
+        )
+        await query.message.reply_text(msg, reply_markup=get_main_menu_keyboard(lang))
+        return
 
     if data.startswith("lang_"):
         lang = data.split("_")[1]
@@ -639,6 +875,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data["state"] = "lang_selection"
     else:
+        # Check if text looks like a copied resume to trigger parse review
+        text_lower = text.lower()
+        has_cv_keywords = any(kw in text_lower for kw in ["experience", "education", "skills", "projects", "staj", "ish joyi", "malumot", "konikma", "ish tajribasi", "опыт работы", "образование", "навыки", "проекты"])
+        if len(text) > 150 and has_cv_keywords:
+            await update.message.reply_text(t("processing", lang))
+            await process_parsed_resume(update, context, text, student, lang)
+            return
+
         # Fallback to direct Career Advice Chat if no matching button
         await update.message.reply_text(t("processing", lang))
         conv_id = get_active_conversation(user.id, "advice") or create_conversation(user.id, "advice")
@@ -806,4 +1050,181 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     context.user_data["state"] = None
     context.user_data.pop("temp_profile", None)
+
+
+async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Downloads and parses an uploaded PDF/TXT resume file, starting the AI onboarding flow."""
+    from pathlib import Path
+    user = update.effective_user
+    student = get_student(user.id)
+    lang = student.get("language", "uz") if student else "uz"
+    
+    if not student:
+        # Create a basic student record for them so they can onboard
+        student = {
+            "telegram_user_id": str(user.id),
+            "telegram_username": user.username,
+            "telegram_full_name": user.full_name,
+            "name": user.full_name or "Unknown",
+            "language": lang
+        }
+        save_student(user.id, student)
+        
+    document = update.message.document
+    filename = document.file_name
+    suffix = Path(filename).suffix.lower()
+    
+    if suffix not in [".txt", ".pdf"]:
+        msg = (
+            "❌ Faqat PDF yoki TXT rezyume fayllarini qabul qilaman. Iltimos, rezyume matnini nusxalab yuboring yoki PDF yuklang."
+            if lang == "uz" else
+            "❌ Я принимаю только файлы резюме в формате PDF или TXT. Пожалуйста, отправьте текст резюме или загрузите PDF."
+            if lang == "ru" else
+            "❌ I only accept PDF or TXT resume files. Please send your resume text or upload a PDF."
+        )
+        await update.message.reply_text(msg)
+        return
+        
+    await update.message.reply_text(t("processing", lang))
+    
+    from src.config import DATA_DIR
+    temp_path = DATA_DIR / f"temp_{user.id}{suffix}"
+    
+    try:
+        tg_file = await document.get_file()
+        await tg_file.download_to_drive(custom_path=temp_path)
+        
+        from src.ingestion import parse_file
+        text_content = parse_file(temp_path)
+        
+        temp_path.unlink(missing_ok=True)
+        
+        if not text_content or not text_content.strip():
+            msg = (
+                "❌ Fayldan matn o'qib bo'lmadi. Iltimos, rezyume matnini botga yozib yuboring."
+                if lang == "uz" else
+                "❌ Не удалось прочитать резюме. Пожалуйста, отправьте текст резюме сообщением."
+                if lang == "ru" else
+                "❌ Could not read resume content. Please paste your resume text as a message."
+            )
+            await update.message.reply_text(msg)
+            return
+            
+        await process_parsed_resume(update, context, text_content, student, lang)
+        
+    except Exception as e:
+        print(f"Error handling document: {e}")
+        temp_path.unlink(missing_ok=True)
+        await update.message.reply_text(t("error_generic", lang))
+
+
+async def process_parsed_resume(update: Update, context: ContextTypes.DEFAULT_TYPE, text_content: str, student: dict, lang: str):
+    """Extracts profile details using AI and renders a markdown preview to the student with action buttons."""
+    from src.career_modes import parse_resume_via_ai
+    
+    parsed_data = parse_resume_via_ai(text_content)
+    context.user_data["temp_parsed_profile"] = parsed_data
+    
+    name = parsed_data.get("name", "Unknown")
+    role = parsed_data.get("target_role", "Not specified")
+    bio = parsed_data.get("bio", "")
+    skills = ", ".join(parsed_data.get("skills", []))
+    
+    exp_text = ""
+    for idx, e in enumerate(parsed_data.get("experiences", [])):
+        exp_text += f"\n💼 *{e.get('role')}* at {e.get('company')} ({e.get('start_date')} - {e.get('end_date')})\n   {e.get('description', '')}\n"
+        
+    edu_text = ""
+    for idx, ed in enumerate(parsed_data.get("education", [])):
+        edu_text += f"\n🎓 *{ed.get('degree')}* in {ed.get('field_of_study')} at {ed.get('institution')} ({ed.get('start_date')} - {ed.get('end_date')})\n"
+        
+    proj_text = ""
+    for idx, p in enumerate(parsed_data.get("projects", [])):
+        proj_text += f"\n🛠 *{p.get('title')}* (Stack: {p.get('tech_stack')})\n   {p.get('description', '')}\n"
+        
+    preview = (
+        f"📝 *REZYUME TAHLILI NATIJALARI (DRAFT)*\n\n"
+        f"👤 *Ism:* {name}\n"
+        f"🎯 *Maqsadli lavozim:* {role}\n"
+        f"💡 *Bio:* {bio}\n"
+        f"🛠 *Ko'nikmalar:* {skills}\n"
+        f"\n*Ish tajribasi:* {exp_text if exp_text else 'Yoq'}\n"
+        f"\n*Ta'lim:* {edu_text if edu_text else 'Yoq'}\n"
+        f"\n*Loyihalar:* {proj_text if proj_text else 'Yoq'}\n\n"
+        f"Ushbu ma'lumotlar to'g'rimi? Tasdiqlangach, profilingiz yaratiladi va ball hisoblanadi."
+        if lang == "uz" else
+        f"📝 *РЕЗУЛЬТАТЫ АНАЛИЗА РЕЗЮМЕ (ЧЕРНОВИК)*\n\n"
+        f"👤 *Имя:* {name}\n"
+        f"🎯 *Целевая роль:* {role}\n"
+        f"💡 *О себе:* {bio}\n"
+        f"🛠 *Навыки:* {skills}\n"
+        f"\n*Опыт работы:* {exp_text if exp_text else 'Нет'}\n"
+        f"\n*Образование:* {edu_text if edu_text else 'Нет'}\n"
+        f"\n*Проекты:* {proj_text if proj_text else 'Нет'}\n\n"
+        f"Всё верно? После подтверждения ваш профиль будет создан и рассчитан балл готовности."
+        if lang == "ru" else
+        f"📝 *RESUME PARSE PREVIEW (DRAFT)*\n\n"
+        f"👤 *Name:* {name}\n"
+        f"🎯 *Target Role:* {role}\n"
+        f"💡 *Bio:* {bio}\n"
+        f"🛠 *Skills:* {skills}\n"
+        f"\n*Experience:* {exp_text if exp_text else 'None'}\n"
+        f"\n*Education:* {edu_text if edu_text else 'None'}\n"
+        f"\n*Projects:* {proj_text if proj_text else 'None'}\n\n"
+        f"Is this correct? Once confirmed, your profile will be created and readiness score computed."
+    )
+    
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Tasdiqlash / Confirm", callback_data="parsed_profile_confirm"),
+            InlineKeyboardButton("❌ Bekor qilish / Cancel", callback_data="parsed_profile_reject")
+        ]
+    ])
+    
+    await update.message.reply_text(preview, reply_markup=keyboard, parse_mode="Markdown")
+
+
+async def consent_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Allows student to configure employer visibility consent, video intro link, etc."""
+    user = update.effective_user
+    student = get_student(user.id)
+    if not student:
+        await update.message.reply_text("Iltimos, avval ro'yxatdan o'ting: /start")
+        return
+        
+    lang = student.get("language", "uz")
+    
+    from src.db import get_db_connection
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT consent_opt_in FROM students WHERE telegram_user_id = ?;", (str(user.id),))
+    row = cursor.fetchone()
+    conn.close()
+    
+    consent = row["consent_opt_in"] if row else 0
+    consent_str = "✅ Active" if consent == 1 else "❌ Inactive"
+    
+    msg = (
+        f"🛡 *TALENT MARKETPLACE SOZLAMALARI*\n\n"
+        f"• Ish beruvchilarga ko'rinish (Employer Visibility): *{consent_str}*\n\n"
+        f"Quyidagi tugmalar orqali ruxsat berishingiz yoki uni bekor qilishingiz mumkin."
+        if lang == "uz" else
+        f"🛡 *НАСТРОЙКИ ВИДИМОСТИ ПРОФИЛЯ*\n\n"
+        f"• Видимость для работодателей: *{consent_str}*\n\n"
+        f"Вы можете включить или отключить видимость кнопками ниже."
+        if lang == "ru" else
+        f"🛡 *TALENT MARKETPLACE CONSENT*\n\n"
+        f"• Employer Visibility: *{consent_str}*\n\n"
+        f"Use the buttons below to toggle your consent or update visibility."
+    )
+    
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✅ Opt-in (Enable)", callback_data="consent_opt_in_enable"),
+            InlineKeyboardButton("❌ Opt-out (Disable)", callback_data="consent_opt_in_disable")
+        ]
+    ])
+    
+    await update.message.reply_text(msg, reply_markup=keyboard, parse_mode="Markdown")
+
 

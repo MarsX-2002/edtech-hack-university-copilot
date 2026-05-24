@@ -1,45 +1,61 @@
-Eng mukammal variantda AI agent quyidagi funksiyalarni o'z ichiga oladi:
-1. Talabalar uchun shaxsiylashtirilgan yordam (Student-Facing Features)
-"Skill Passport" va O'sish Tahlili: Talabaning amaliy ko'nikmalarini (Skill Passport) baholash va tahlil qilish. AI talabaning joriy darajasi bilan u ko'zlayotgan pozitsiya o'rtasidagi farqni (skill gap) aniqlab, qaysi texnologiya yoki soft skill'larni o'rganish kerakligini aytadi.
-ATS'ga Mos Rezyume va Profil Yaratish: Talaba kiritgan ma'lumotlar asosida yirik kompaniyalarning ATS (Applicant Tracking System) dasturlaridan o'ta oladigan rezyumelarni generatsiya qilish. Shuningdek, LinkedIn profillari uchun professional "Bio" va postlar yozishda yordam berish.
-Interaktiv Suhbat Simulyatori: Ovozli yoki matnli rejimda texnik (hard skills) va xulq-atvor (behavioral) intervyular o'tkazish. Su'niy intellekt xalqaro standartlar asosida savollar beradi, talabaning javoblarini tahlil qiladi va qayerda xato qilgani bo'yicha darhol konstruktiv fidbek beradi.
-Ko'p Tillilik va Situatsion Treninglar: Xalqaro hamkorlar va xorijiy kompaniyalar uchun ingliz yoki rus tillarida suhbatlarga tayyorlash. Til to'siqlarini yengish uchun maxsus kasbiy dialog simulyatsiyalari.
-2. Karyera Markazi va Tahliliy Boshqaruv (Admin & Dashboard Features)
-Avtomatlashtirilgan "Matchmaking": Yirik texnologik ekotizimlar, xalqaro ta'lim idoralari yoki mahalliy hamkorlardan kelib tushgan vakansiyalar/stajirovkalar talablariga eng mos keladigan talabalarni bazadan avtomatik tarzda saralab berish.
-Talabalar Faolligini Kuzatish (Predictive Analytics): Karyera markazi rahbariyati uchun maxsus oyna. Qaysi talabalar faol ish qidiryapti, kim suhbatlarning qaysi bosqichidan yiqilyapti va buning asosiy sababi nima ekanligini vizual tarzda ko'rsatib beruvchi tahliliy hisobotlar.
-Mehnat Bozori Trendlari: AI doimiy ravishda IT va biznes bozorini tahlil qilib, ayni paytda qaysi ko'nikmalarga (masalan, sun'iy intellekt integratsiyasi, ma'lumotlar tahlili) talab yuqori ekanligini markazga hisobot qilib boradi.
-3. Operatsion va Texnik Qulayliklar
-Omnichannel (Ko'p platformali) Integratsiya: AI agentni nafaqat veb-saytda, balki talabalar va bitiruvchilar eng ko'p vaqt o'tkazadigan platformalarda — masalan, Telegram kanallar va botlar tizimiga ulash.
-Avtomatik Tarmoq (Networking) Takliflari: Karyera yarmarkalari, xakatonlar va forumlarda talabalarga qaysi kompaniya vakillari bilan uchrashish va qanday savollar berish bo'yicha skriptlar tayyorlab berish.
-Bunday agent karyera markazining operatsion yukini 70-80% ga kamaytirib, e'tiborni ko'proq yirik hamkorliklar va strategik rivojlanishga qaratish imkonini beradi.
+# hired.uz — Karyera Markazi va Tasdiqlangan Talabalar Karyera Bozori (Talent Marketplace) 🎓💼
 
-Karyera markazi uchun AI agentning dastlabki versiyasini (MVP) yaratishda eng to'g'ri va tejamkor yo'l — sun'iy intellektni noldan o'qitish (fine-tuning) emas, balki RAG (Retrieval-Augmented Generation) texnologiyasidan foydalanishdir.
-RAG usuli sun'iy intellektga markazingizning ichki hujjatlari va joriy vakansiyalarni "uzatib", faqat shu ma'lumotlar asosida aniq va to'g'ri javob berishni ta'minlaydi.
-Quyida MVP uchun texnik arxitektura va ma'lumotlar bazasini shakllantirish bo'yicha to'liq yo'riqnoma keltirilgan.
-1. MVP Texnik Arxitekturasi
-Dastlabki versiya tezkor ishlashi va oson sinovdan o'tkazilishi uchun quyidagi qatlamlardan iborat bo'ladi:
-Foydalanuvchi interfeysi (Frontend): Telegram Bot eng qulay va tezkor yechim hisoblanadi (talabalar u yerda doim faol, shuningdek, maxsus karyera kanallaringiz bilan integratsiya qilish oson). Keyinchalik uni universitet portaliga veb-vidjet sifatida qo'shish mumkin.
-Asosiy mantiq (Backend): Python (FastAPI yoki Flask) yoki Node.js. Bu qatlam Telegram bot, ma'lumotlar bazasi va AI o'rtasidagi ma'lumotlar almashinuvini boshqaradi.
-AI Dvigateli (LLM): OpenAI (GPT-4o), Anthropic (Claude 3.5) yoki Google (Gemini 1.5 Pro) API'lari. Ular matnni tushunish va generatsiya qilish uchun asosiy "miya" vazifasini bajaradi.
-Vektorli Ma'lumotlar Bazasi (Vector DB): Pinecone, Qdrant yoki Milvus. RAG tizimi aynan shu yerda ishlaydi. Hujjatlar (vakansiyalar, rezyume shablonlari) raqamli vektorlarga aylantirilib, shu bazada saqlanadi. AI kerakli ma'lumotni shu yerdan soniyaning mingdan bir qismida topib oladi.
-Relyatsion Ma'lumotlar Bazasi: PostgreSQL. Talabalarning profillari, ularning "Skill Passport" natijalari, qaysi kursda o'qishi va botdan foydalanish tarixini saqlash uchun.
-2. Agentni Qanday Ma'lumotlarda "O'qitish" Kerak?
-AI agent aniq ishlashi va mavhum javoblar bermasligi (gallyutsinatsiyaning oldini olish) uchun Vektorli Ma'lumotlar Bazasini quyidagi maxsus ma'lumotlar bilan to'ldirish (indexing) kerak:
-A. Talaba va Baholash Ma'lumotlari (Ichki Kontekst)
-Skill Passport mezonlari: Har bir yo'nalish (Frontend, Backend, AI va h.k.) bo'yicha talabadan qanday amaliy ko'nikmalar talab qilinishi.
-O'quv dasturlari va loyihalar: Universitetda talabalar bajaradigan amaliy loyihalar va ularning qisqacha tavsifi (rezyumega portfel sifatida qo'shish uchun).
-B. Mehnat Bozori va Hamkorlar Bazasidan
-Real Vakansiyalar: Hamkor kompaniyalarning (masalan, yirik texnologik ekotizimlar yoki banklarning) stajirovka va ish o'rinlari talablari.
-Kompaniya profillari: Hamkorlarning korporativ madaniyati, ulardagi ish sharoitlari va intervyu jarayonlari haqida ma'lumotlar (talabani suhbatga tayyorlash uchun).
-C. Karyera Markazining "Oltin Qoidalari"
-Rezyume va Muqova xati (Cover Letter) shablonlari: ATS dasturlaridan muvaffaqiyatli o'tgan, xalqaro va mahalliy bozor uchun moslashtirilgan namunalar.
-Intervyu savollari bazasi: Ham texnik (hard skills), ham xulq-atvorga (behavioral) oid savollar to'plami. Ularga qanday qilib STAR (Situation, Task, Action, Result) usulida javob berish bo'yicha ko'rsatmalar.
-3. RAG Qanday Ishlaydi? (Jarayon)
-Bu jarayon amalda quyidagicha kechadi:
-Talaba so'rovi: "Menga Java Junior pozitsiyasiga rezyume yozishga yordam ber."
-Ma'lumot qidirish (Retrieval): Backend dastur Vektorli bazadan Java yo'nalishi bo'yicha Skill Passport mezonlarini va to'g'ri rezyume shablonlarini tortib oladi. Shu bilan birga, PostgreSQL'dan o'sha talabaning qaysi kursda o'qiyotgani va avvalgi yutuqlarini oladi.
-Prompt shakllantirish: Tizim LLM'ga (Aiga) shunday yopiq buyruq beradi: "Sen universitet karyera maslahatchisisan. Mana bu rezyume shabloni va mana bu talabaning ma'lumotlari. Faqat shu ma'lumotlarga asoslanib, unga ATS'ga mos rezyume tayyorlab ber."
-Javob (Generation): AI to'g'ridan-to'g'ri va shaxsiylashtirilgan tayyor rezyumeni talabaga yuboradi.
-Ushbu arxitektura orqali siz katta mablag' sarflab maxsus AI model yaratishdan qochasiz, lekin o'z ma'lumotlaringiz asosida juda aniq ishlaydigan mukammal assistentga ega bo'lasiz.
+> **Tagline**: from campus to hired.
 
-platforma uzbek tilida ishlashi shart, rus va ingliz tiliga o'tish funksiyasi bo'lishi kerak.
+**hired.uz** — bu universitet karyera markazlari faoliyatini avtomatlashtirish hamda talabalar bilan nufuzli ish beruvchi kompaniyalarni bog'laydigan yagona platformadir. 
+
+Loyiha talabalarning shaxsiy ma'lumotlari va maxfiyligini to'liq himoya qilgan holda, universitetning tasdiqlangan talabalar bazasini (Talent Pool) shakllantiradi va ish beruvchilarga aqlli qidiruv (AI Search) imkoniyatini taqdim etadi.
+
+---
+
+## 💼 Biznes Modeli
+
+Platforma ikki tomonlama tijoriy qiymatga ega:
+1. **Universitetlar uchun**: Rezyumelarni avtomatik tekshirish, Skill Passport yaratish, STAR metodologiyasi asosida interaktiv suhbat simulyatsiyasi va mos keladigan vakansiyalarni tavsiya qilish orqali karyera markazi ish hajmini 80% gacha kamaytiradi.
+2. **Ish beruvchilar uchun**: Universitet tomonidan tasdiqlangan va saralangan talabalar bazasiga to'g'ridan-to'g'ri va xavfsiz kirish.
+
+---
+
+## 🔒 Maxfiylik va Talabalar Roziligi Tizimi (Data Privacy Moat)
+
+Talabalar ma'lumotlarini ruxsatsiz tarqatish yoki sotish qat'iyan man etiladi. Bog'lanish jarayoni quyidagi ko'p bosqichli ruxsatnomalar asosida amalga oshiriladi:
+
+1. **Talabaning Roziligi (Opt-in)**: Talaba Telegram bot orqali o'z profilini tasdiqlashi va uni qidiruv bazasiga qo'shishga rozilik berishi shart (botdagi `/consent` buyrug'i yoki sozlamalar orqali). Rozilik bermagan talabalar qidiruvda ko'rinmaydi.
+2. **Anonymized Cards (Anonim Profil)**: Ish beruvchilar qidiruv davomida talabaning ismi, tajribalari, loyihalari, ta'limi va ko'nikmalarini ko'radi. Biroq, talabaning **telefon raqami**, **Telegram username** va **Student ID** kabi shaxsiy aloqa ma'lumotlari to'liq yashiriladi.
+3. **Bog'lanish So'rovi (Introduction Request)**:
+   - **Ish beruvchi so'rovi**: Ish beruvchi o'ziga ma'qul kelgan talaba kartasidagi **Request Intro** tugmasini bosadi va taklif qilinayotgan ish yoki stajirovka haqida ma'lumot yozib yuboradi. So'rov holati: `pending_staff_approval`.
+   - **Karyera markazi tekshiruvi**: Karyera markazi xodimlari dashboard orqali kelib tushgan so'rovni ko'rib chiqadi. Agar taklif talaba profiliga mos va xavfsiz bo'lsa, xodim so'rovni tasdiqlaydi. So'rov holati: `approved_by_staff`.
+   - **Talaba roziligi**: Tizim avtomatik ravishda talabaning Telegram botiga interaktiv tugmali xabar yuboradi: `[ ✅ Ha, ulashish ]` va `[ ❌ Yo'q, rad etish ]`.
+   - **Aloqa ochilishi**: Agar talaba **Ha, ulashish** tugmasini bossa, so'rov `completed` holatiga o'tadi va tizim ish beruvchi dashboardida talabaning telefon raqami va Telegram username'ini ochib ko'rsatadi. Har ikki tomonga ulanish haqida xabarnoma boradi.
+
+---
+
+## 🔍 Aqlli Gibrid Qidiruv (Smart Hybrid Search)
+
+Ish beruvchilar uchun talabalarni qidirish tizimi an'anaviy qidiruvdan tubdan farq qiladi va sun'iy intellekt orqali ishlaydi:
+
+* **Tabiiy Tilda So'rovlar (Semantic Search)**: Ish beruvchi qidiruv maydoniga oddiy matn ko'rinishida talab yozishi mumkin. Masalan: *"Python developer, RAG texnologiyasini biladigan va 2 yillik tajribaga ega talaba"*.
+* **Gibrid Filtrlash**: Tizim SQL orqali qattiq filtrlarni (maqsadli lavozim, ko'nikmalar ro'yxati, minimum reyting) qo'llaydi va bir vaqtning o'zida ChromaDB orqali profil ma'lumotlarining semantik o'xshashligini hisoblaydi.
+* **Tayyorgarlik Reytingi bo'yicha Saralash (Readiness Score)**: Talabalar AI tomonidan 0 dan 100 gacha bo'lgan ball bilan baholanadi va qidiruv natijalarida yuqori ballga ega bo'lgan eng tayyor talabalar birinchi bo'lib ko'rinadi.
+* **Tushunarli Moslik Sabablari (AI Match Insights)**: Tizim har bir topilgan talaba kartasida nima sababdan ushbu talaba mos kelganini tushuntirib beradi. Masalan: *"Talabaning profilida Python bo'yicha 2 yillik tajriba va Django loyihalari borligi sababli ushbu so'rovga 95% mos keldi"*.
+
+---
+
+## 🛠️ Loyiha Arxitekturasi va Modullari
+
+Platforma uchta asosiy qismdan tashkil topgan:
+
+1. **Talabalar Telegram Boti (`bot.py`, `src/bot_handlers.py`)**:
+   - Rezyume yuklash va matn ko'rinishidagi tajribalarni qabul qilish.
+   - **Gemini AI rezyume tahlili (`src/career_modes.py`)**: Yuklangan PDF yoki matnli rezyumeni o'qib, undan tajribalar, loyihalar, ta'lim va ko'nikmalarni JSON formatida ajratib oladi va profiling to'liqligini baholaydi.
+   - Profil loyihasini (draft) tasdiqlash va qidiruvga rozilik (consent) boshqaruvi.
+   - Ish beruvchilarning bog'lanish so'rovlarini qabul qilish / rad etish.
+
+2. **Backend API Xizmati (`src/api.py`, `src/auth.py`, `src/db.py`)**:
+   - SQLite ma'lumotlar bazasida normalized jadvallarni saqlaydi va boshqaradi.
+   - Rolga asoslangan xavfsiz avtorizatsiya: `employer` roli faqat qidiruv va so'rovlar bilan ishlay oladi.
+   - Shaxsiy ma'lumotlarni yashirish / ochish mantiqiy filtrlari.
+
+3. **Karyera Dashboard UI (`dashboard/src/App.tsx`)**:
+   - **Ish beruvchi uchun**: Student Talent Map (aqlli qidiruv va filtrlar paneli, rezyumelarni ochib ko'rish, intro request yuborish) va Intro Tracker (yuborilgan so'rovlar statusi).
+   - **Karyera markazi xodimlari uchun**: Overview (tizim statistikasi), Student Talent Map (barcha ma'lumotlar bilan), Intro Approvals (so'rovlarni tasdiqlash/rad etish), Vacancy Matchmaker va Curriculum Deficit Analyzer.

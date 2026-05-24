@@ -18,7 +18,12 @@ import {
   Shield,
   ClipboardList,
   LogOut,
-  Settings
+  Settings,
+  Search,
+  Check,
+  X,
+  Send,
+  UserCheck
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
@@ -28,10 +33,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
 
 const DASHBOARD_TRANSLATIONS = {
   uz: {
-    title: "PDP University Karyera Markazi",
+    title: "hired.uz",
     subtitle: "Karyera Markazi",
     overview: "Boshqaruv paneli",
-    studentMap: "Talabalar iste'dod xaritasi",
+    studentMap: "Iste'dodlar bazasi",
     vacancyMatch: "Vakansiya saralovchi",
     deficitAnalyzer: "O'quv rejasi tahlilchisi",
     telemetrySafety: "Telemetriya va xavfsizlik",
@@ -42,15 +47,15 @@ const DASHBOARD_TRANSLATIONS = {
     syncData: "Sinxronlash",
     light: "Yorug'lik",
     dark: "Qorong'ulik",
-    welcomeTitle: "Campus Career Copilot",
-    welcomeSubtitle: "Staff Dashboard",
-    welcomeDesc: "PDP University Career Center uchun AI boshqaruv paneli. Faqat ruxsat berilgan xodimlar kira oladi.",
+    welcomeTitle: "hired.uz",
+    welcomeSubtitle: "Karyera markazi portali",
+    welcomeDesc: "universitetlar va ish beruvchilar uchun tasdiqlangan talabalar karyera bozori.",
     signInGoogle: "Google orqali kirish",
     or: "YOKI",
     sandboxMode: "demo rejimga kirish",
     demoLabel: "demo uchun:",
     demoLink: "demo rejim",
-    staffLoginTitle: "Tizimga kirish (Xodimlar)",
+    staffLoginTitle: "Tizimga kirish",
     emailLabel: "Email pochta",
     passwordLabel: "Parol",
     loginButton: "Kirish",
@@ -96,16 +101,17 @@ const DASHBOARD_TRANSLATIONS = {
     appTheme: "Tizim mavzusi",
     dataSync: "Ma'lumotlarni yangilash",
     syncDesc: "LMS tizimidan va SQLite ma'lumotlar bazasidan oxirgi ma'lumotlarni sinxronlash.",
-    talentPoolTitle: "Talabalar ro'yxati (Talent Pool)",
+    talentPoolTitle: "Talabalar iste'dodlari bazasi",
+    talentPoolDesc: "Platformada ro'yxatdan o'tgan barcha talabalarning ko'nikmalari va tayyorlik darajalari.",
     searchPlaceholder: "Ism yoki ko'nikma bo'yicha qidirish...",
     allRoles: "Barcha lavozimlar",
     allReadiness: "Barcha tayyorgarlik darajalari"
   },
   en: {
-    title: "PDP University Career Center",
+    title: "hired.uz",
     subtitle: "Career Center",
     overview: "Overview",
-    studentMap: "Student Talent Map",
+    studentMap: "Talent Database",
     vacancyMatch: "Vacancy Matchmaker",
     deficitAnalyzer: "Curriculum Deficit Analyzer",
     telemetrySafety: "Telemetry & Safety",
@@ -116,15 +122,15 @@ const DASHBOARD_TRANSLATIONS = {
     syncData: "Sync Data",
     light: "Light",
     dark: "Dark",
-    welcomeTitle: "Campus Career Copilot",
-    welcomeSubtitle: "Staff Dashboard",
-    welcomeDesc: "AI Dashboard for PDP University Career Center. Only authorized staff members can sign in.",
+    welcomeTitle: "hired.uz",
+    welcomeSubtitle: "Career Center Portal",
+    welcomeDesc: "verified student talent marketplace for universities and employers.",
     signInGoogle: "Sign in with Google",
     or: "OR",
     sandboxMode: "enter demo mode",
     demoLabel: "for demo:",
     demoLink: "demo mode",
-    staffLoginTitle: "Staff Sign In",
+    staffLoginTitle: "Sign In",
     emailLabel: "Email Address",
     passwordLabel: "Password",
     loginButton: "Sign In",
@@ -170,7 +176,8 @@ const DASHBOARD_TRANSLATIONS = {
     appTheme: "Interface Theme",
     dataSync: "Data Synchronization",
     syncDesc: "Fetch and synchronize latest student and vacancy data from the server.",
-    talentPoolTitle: "Student Talent Pool",
+    talentPoolTitle: "Student Talent Database",
+    talentPoolDesc: "Browse and manage all registered student profiles and their readiness scores.",
     searchPlaceholder: "Search by name or skills...",
     allRoles: "All Target Roles",
     allReadiness: "All Readiness Levels"
@@ -230,6 +237,7 @@ interface Vacancy {
 }
 
 interface VacancyMatch {
+  id?: number;
   telegram_id: string;
   name: string;
   target_role: string;
@@ -237,6 +245,8 @@ interface VacancyMatch {
   skills_matched: { name: string; verified: boolean }[];
   skills_missing: string[];
   readiness_score: number;
+  intro_status?: string | null;
+  intro_request_id?: number | null;
 }
 
 interface TelemetryData {
@@ -252,6 +262,41 @@ interface WeakArea {
   missing_count: number;
 }
 
+interface UniLogoProps {
+  src: string;
+  alt: string;
+  fallbackText: string;
+}
+
+function UniLogo({ src, alt, fallbackText }: UniLogoProps) {
+  const [hasError, setHasError] = useState(false);
+  return (
+    <div style={{
+      width: '56px',
+      height: '56px',
+      borderRadius: '50%',
+      backgroundColor: '#111827',
+      border: '1px solid var(--border-color)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      boxShadow: 'var(--shadow-sm)'
+    }}>
+      {hasError ? (
+        <span style={{ fontWeight: '700', fontSize: '11px', color: 'var(--text-muted)' }}>{fallbackText}</span>
+      ) : (
+        <img 
+          src={src} 
+          alt={alt} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={() => setHasError(true)}
+        />
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = useState<any | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -262,7 +307,17 @@ function App() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'vacancies' | 'weak-areas' | 'telemetry' | 'staff-mgmt' | 'audit-logs' | 'settings'>('overview');
+  const [loginView, setLoginView] = useState<'signin' | 'signup'>('signin');
+  const [signupCompanyName, setSignupCompanyName] = useState('');
+  const [signupContactName, setSignupContactName] = useState('');
+  const [signupContactEmail, setSignupContactEmail] = useState('');
+  const [signupContactPhone, setSignupContactPhone] = useState('');
+  const [signupReasonForJoining, setSignupReasonForJoining] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [signupSuccessMessage, setSignupSuccessMessage] = useState('');
+  
+  const [activeTab, setActiveTab] = useState<'overview' | 'students' | 'vacancies' | 'weak-areas' | 'telemetry' | 'staff-mgmt' | 'audit-logs' | 'settings' | 'talent-search' | 'employer-intros' | 'intro-approvals' | 'employer-approvals'>('overview');
   const [loading, setLoading] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -406,6 +461,64 @@ function App() {
       setUser(userData);
       setIsDemoMode(false);
       await fetchData(false, userData);
+    } catch (err: any) {
+      setLoginError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmployerSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setSignupSuccessMessage('');
+    
+    if (signupPassword !== signupConfirmPassword) {
+      setLoginError(dashboardLanguage === 'uz' ? 'Parollar mos kelmadi / Passwords do not match' : 'Passwords do not match');
+      return;
+    }
+    if (signupPassword.length < 8) {
+      setLoginError(dashboardLanguage === 'uz' ? 'Parol kamida 8 ta belgidan iborat bo\'lishi kerak / Password must be at least 8 characters' : 'Password must be at least 8 characters');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/register-employer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signupContactEmail,
+          password: signupPassword,
+          name: signupContactName,
+          company_name: signupCompanyName,
+          contact_phone: signupContactPhone,
+          reason_for_joining: signupReasonForJoining
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Registration failed');
+      }
+      
+      setSignupSuccessMessage(dashboardLanguage === 'uz' 
+        ? 'Hisob muvaffaqiyatli ro\'yxatdan o\'tkazildi! Karyera markazi faollashtirganidan so\'ng kirishingiz mumkin.' 
+        : 'Employer account registered successfully! You can sign in once verified by the Career Center.');
+      
+      setSignupCompanyName('');
+      setSignupContactName('');
+      setSignupContactEmail('');
+      setSignupContactPhone('');
+      setSignupReasonForJoining('');
+      setSignupPassword('');
+      setSignupConfirmPassword('');
+      
+      setTimeout(() => {
+        setLoginView('signin');
+        setSignupSuccessMessage('');
+      }, 5000);
+      
     } catch (err: any) {
       setLoginError(err.message);
     } finally {
@@ -814,6 +927,281 @@ function App() {
     risk_logs: []
   });
 
+  // Talent Marketplace state variables
+  const [employerIntros, setEmployerIntros] = useState<any[]>([]);
+  const [adminIntros, setAdminIntros] = useState<any[]>([]);
+  const [searchRole, setSearchRole] = useState('All');
+  const [searchMinScore, setSearchMinScore] = useState<number>(0);
+  const [searchSkills, setSearchSkills] = useState('');
+  const [searchUniversity, setSearchUniversity] = useState('All');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showRequestIntroModal, setShowRequestIntroModal] = useState<number | null>(null);
+  const [introRequestMessage, setIntroRequestMessage] = useState('');
+  const [employersList, setEmployersList] = useState<any[]>([]);
+  const [employersLoading, setEmployersLoading] = useState(false);
+  
+  // Talent Marketplace API Helpers
+  const handleEmployerSearch = async (sQuery = searchQuery, sRole = searchRole, sMinScore = searchMinScore, sSkills = searchSkills) => {
+    setSearchLoading(true);
+    if (isDemoMode) {
+      setTimeout(() => {
+        const mockResults = [
+          {
+            student_id: 1,
+            name: "Lazizbek Karimov",
+            target_role: "Backend Developer",
+            university: "PDP University",
+            faculty: "Software Engineering",
+            year: "3",
+            readiness_score: 85,
+            completeness_score: 90,
+            semantic_similarity: 0.95,
+            ranking_score: 88.5,
+            match_explanation: "Target role aligns \u2022 Has verified skills: Python, Django \u2022 Solid project completion",
+            skills: ["Python", "Django", "PostgreSQL", "Docker", "REST API"],
+            verified_skills: ["Python", "Django"],
+            experiences: [
+              { company: "Uzum Tech", role: "Backend Intern", start_date: "2024-06", end_date: "2025-01", description: "Built and maintained REST microservices with Django and PostgreSQL." },
+              { company: "PDP Academy", role: "Teaching Assistant", start_date: "2023-09", end_date: "2024-05", description: "Assisted in Python and SQL coursework for 60+ students." }
+            ],
+            education: [{ institution: "PDP University", degree: "B.S.", field_of_study: "Software Engineering", start_date: "2022-09", end_date: "2026-06" }],
+            projects: [
+              { title: "E-Commerce REST API", description: "Transactional backend with order management, payments integration, and admin dashboard.", tech_stack: "Python, Django, PostgreSQL", project_url: "" },
+              { title: "University Chatbot", description: "AI-powered FAQ assistant using Gemini API and ChromaDB for semantic search.", tech_stack: "Python, FastAPI, ChromaDB", project_url: "" }
+            ],
+            bio: "Backend-oriented student with verified Python and Django skills, looking for junior/internship roles. Experienced in building REST APIs, working with relational databases, and collaborating in agile teams.",
+            intro_status: null
+          },
+          {
+            student_id: 2,
+            name: "Diyora Rustamova",
+            target_role: "Frontend Developer",
+            university: "PDP University",
+            faculty: "Computer Science",
+            year: "4",
+            readiness_score: 92,
+            completeness_score: 95,
+            semantic_similarity: 0.88,
+            ranking_score: 91.2,
+            match_explanation: "Target role aligns \u2022 Has verified skills: React, TypeScript \u2022 High readiness rating",
+            skills: ["JavaScript", "React", "TypeScript", "HTML/CSS", "Git"],
+            verified_skills: ["React", "TypeScript"],
+            experiences: [
+              { company: "EPAM Systems", role: "Frontend Intern", start_date: "2024-03", end_date: "2024-09", description: "Developed responsive UI components for enterprise SaaS platform using React and TypeScript." }
+            ],
+            education: [{ institution: "PDP University", degree: "B.S.", field_of_study: "Computer Science", start_date: "2021-09", end_date: "2025-06" }],
+            projects: [
+              { title: "LMS Student Portal", description: "Redesigned the learning management system frontend with modern React patterns and accessibility best practices.", tech_stack: "React, TypeScript, Vite", project_url: "" },
+              { title: "Portfolio Builder", description: "Drag-and-drop portfolio generator for students with live preview and PDF export.", tech_stack: "React, TailwindCSS, jsPDF", project_url: "" }
+            ],
+            bio: "Detail-oriented frontend developer with verified React and TypeScript skills. Completed a 6-month internship at EPAM Systems building enterprise UI components. Seeking full-time junior frontend roles.",
+            intro_status: null
+          }
+        ];
+        
+        let filtered = mockResults;
+        if (sRole && sRole !== 'All') {
+          filtered = filtered.filter(s => s.target_role === sRole);
+        }
+        if (sMinScore > 0) {
+          filtered = filtered.filter(s => s.readiness_score >= sMinScore);
+        }
+        if (sSkills) {
+          filtered = filtered.filter(s => s.skills.some(sk => sk.toLowerCase().includes(sSkills.toLowerCase())));
+        }
+        
+        setSearchResults(filtered);
+        setSearchLoading(false);
+      }, 500);
+      return;
+    }
+    
+    try {
+      const params = new URLSearchParams();
+      if (sQuery) params.append('query', sQuery);
+      if (sRole && sRole !== 'All') params.append('target_role', sRole);
+      if (sMinScore > 0) params.append('min_readiness', sMinScore.toString());
+      if (sSkills) params.append('skills', sSkills);
+      
+      const res = await apiFetch(`${API_BASE_URL}/api/employer/search?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults(data);
+      }
+    } catch (err) {
+      console.error("Employer search failed:", err);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const fetchEmployerIntroRequests = async () => {
+    if (isDemoMode) return;
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/employer/intro-requests`);
+      if (res.ok) {
+        const data = await res.json();
+        setEmployerIntros(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch employer intro requests:", err);
+    }
+  };
+
+  const fetchAdminIntroRequests = async () => {
+    if (isDemoMode) return;
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/intro-requests`);
+      if (res.ok) {
+        const data = await res.json();
+        setAdminIntros(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin intro requests:", err);
+    }
+  };
+
+  const handleRequestIntro = async (studentId: number, message: string) => {
+    if (isDemoMode) {
+      alert("Demo Mode: Introduction request submitted!");
+      setShowRequestIntroModal(null);
+      setIntroRequestMessage('');
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/employer/intro-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: studentId, message })
+      });
+      if (res.ok) {
+        alert("Introduction request submitted successfully to Career Center!");
+        setShowRequestIntroModal(null);
+        setIntroRequestMessage('');
+        await handleEmployerSearch(searchQuery, searchRole, searchMinScore, searchSkills);
+        await fetchEmployerIntroRequests();
+      } else {
+        const data = await res.json();
+        alert(`Failed to submit request: ${data.detail}`);
+      }
+    } catch (err: any) {
+      alert(`Error submitting request: ${err.message}`);
+    }
+  };
+
+  const handleApproveIntro = async (requestId: number, notes: string) => {
+    if (isDemoMode) {
+      alert("Demo Mode: Request approved! (Push sent to student)");
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/intro-requests/${requestId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes })
+      });
+      if (res.ok) {
+        alert("Approved successfully! Telegram notification sent to student.");
+        await fetchAdminIntroRequests();
+      } else {
+        const data = await res.json();
+        alert(`Failed to approve: ${data.detail}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const handleRejectIntro = async (requestId: number, notes: string) => {
+    if (isDemoMode) {
+      alert("Demo Mode: Request rejected!");
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/intro-requests/${requestId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes })
+      });
+      if (res.ok) {
+        alert("Rejected successfully.");
+        await fetchAdminIntroRequests();
+      } else {
+        const data = await res.json();
+        alert(`Failed to reject: ${data.detail}`);
+      }
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const fetchEmployersList = async () => {
+    if (isDemoMode) {
+      setEmployersList([
+        { id: 1, company_name: "Mock Company A", contact_name: "John Doe", contact_email: "john@mock.com", contact_phone: "+998901234567", status: "pending", created_at: new Date().toISOString(), is_active: 1 },
+        { id: 2, company_name: "Mock Company B", contact_name: "Jane Smith", contact_email: "jane@mock.com", contact_phone: "+998907654321", status: "approved", created_at: new Date().toISOString(), is_active: 1 }
+      ]);
+      return;
+    }
+    setEmployersLoading(true);
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/employers`);
+      if (res.ok) {
+        const data = await res.json();
+        setEmployersList(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch employers list:", err);
+    } finally {
+      setEmployersLoading(false);
+    }
+  };
+
+  const handleApproveEmployer = async (employerId: number) => {
+    if (isDemoMode) {
+      setEmployersList(prev => prev.map(e => e.id === employerId ? { ...e, status: 'approved' } : e));
+      alert("Demo Mode: Employer approved successfully!");
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/employers/${employerId}/approve`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        alert("Employer approved successfully!");
+        await fetchEmployersList();
+      } else {
+        const data = await res.json();
+        alert(`Failed to approve employer: ${data.detail}`);
+      }
+    } catch (err: any) {
+      alert(`Error approving employer: ${err.message}`);
+    }
+  };
+
+  const handleRejectEmployer = async (employerId: number) => {
+    if (isDemoMode) {
+      setEmployersList(prev => prev.map(e => e.id === employerId ? { ...e, status: 'rejected' } : e));
+      alert("Demo Mode: Employer rejected!");
+      return;
+    }
+    try {
+      const res = await apiFetch(`${API_BASE_URL}/api/admin/employers/${employerId}/reject`, {
+        method: 'POST'
+      });
+      if (res.ok) {
+        alert("Employer rejected/deactivated successfully.");
+        await fetchEmployersList();
+      } else {
+        const data = await res.json();
+        alert(`Failed to reject employer: ${data.detail}`);
+      }
+    } catch (err: any) {
+      alert(`Error rejecting employer: ${err.message}`);
+    }
+  };
+
   // Filters for Student Map
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
@@ -831,6 +1219,107 @@ function App() {
     try {
       if (forceDemo) {
         throw new Error('Forced Demo Mode');
+      }
+
+      if (activeUser && activeUser.role === 'employer') {
+        if (!isDemoMode) {
+          // Load vacancies
+          try {
+            const vacanciesRes = await fetch(`${API_BASE_URL}/api/vacancies`, { credentials: 'include' });
+            if (vacanciesRes.ok) {
+              const vacanciesData = await vacanciesRes.json();
+              setVacancies(vacanciesData);
+              if (vacanciesData.length > 0) {
+                setSelectedVacancyId(vacanciesData[0].id);
+              }
+            }
+          } catch (e) {
+            console.warn("Vacancies fetch failed", e);
+          }
+
+          // Load employer intros
+          try {
+            const introsRes = await fetch(`${API_BASE_URL}/api/employer/intro-requests`, { credentials: 'include' });
+            if (introsRes.ok) {
+              const data = await introsRes.json();
+              setEmployerIntros(data);
+            }
+          } catch (e) {
+            console.warn("Employer intros fetch failed", e);
+          }
+
+          // Run search
+          try {
+            const searchRes = await fetch(`${API_BASE_URL}/api/employer/search`, { credentials: 'include' });
+            if (searchRes.ok) {
+              const data = await searchRes.json();
+              setSearchResults(data);
+            }
+          } catch (e) {
+            console.warn("Employer search initial failed", e);
+          }
+        } else {
+          // Demo Mode mock search data load
+          const mockResults = [
+            {
+              student_id: 1,
+              name: "Lazizbek Karimov",
+              target_role: "Backend Developer",
+              university: "PDP University",
+              faculty: "Software Engineering",
+              year: "3",
+              readiness_score: 85,
+              completeness_score: 90,
+              semantic_similarity: 0.95,
+              ranking_score: 88.5,
+              match_explanation: "Target role aligns \u2022 Has verified skills: Python, Django \u2022 Solid project completion",
+              skills: ["Python", "Django", "PostgreSQL", "Docker", "REST API"],
+              verified_skills: ["Python", "Django"],
+              experiences: [
+                { company: "Uzum Tech", role: "Backend Intern", start_date: "2024-06", end_date: "2025-01", description: "Built and maintained REST microservices with Django and PostgreSQL." },
+                { company: "PDP Academy", role: "Teaching Assistant", start_date: "2023-09", end_date: "2024-05", description: "Assisted in Python and SQL coursework for 60+ students." }
+              ],
+              education: [{ institution: "PDP University", degree: "B.S.", field_of_study: "Software Engineering", start_date: "2022-09", end_date: "2026-06" }],
+              projects: [
+                { title: "E-Commerce REST API", description: "Transactional backend with order management, payments integration, and admin dashboard.", tech_stack: "Python, Django, PostgreSQL", project_url: "" },
+                { title: "University Chatbot", description: "AI-powered FAQ assistant using Gemini API and ChromaDB for semantic search.", tech_stack: "Python, FastAPI, ChromaDB", project_url: "" }
+              ],
+              bio: "Backend-oriented student with verified Python and Django skills, looking for junior/internship roles. Experienced in building REST APIs, working with relational databases, and collaborating in agile teams.",
+              intro_status: null
+            },
+            {
+              student_id: 2,
+              name: "Diyora Rustamova",
+              target_role: "Frontend Developer",
+              university: "PDP University",
+              faculty: "Computer Science",
+              year: "4",
+              readiness_score: 92,
+              completeness_score: 95,
+              semantic_similarity: 0.88,
+              ranking_score: 91.2,
+              match_explanation: "Target role aligns \u2022 Has verified skills: React, TypeScript \u2022 High readiness rating",
+              skills: ["JavaScript", "React", "TypeScript", "HTML/CSS", "Git"],
+              verified_skills: ["React", "TypeScript"],
+              experiences: [
+                { company: "EPAM Systems", role: "Frontend Intern", start_date: "2024-03", end_date: "2024-09", description: "Developed responsive UI components for enterprise SaaS platform using React and TypeScript." }
+              ],
+              education: [{ institution: "PDP University", degree: "B.S.", field_of_study: "Computer Science", start_date: "2021-09", end_date: "2025-06" }],
+              projects: [
+                { title: "LMS Student Portal", description: "Redesigned the learning management system frontend with modern React patterns and accessibility best practices.", tech_stack: "React, TypeScript, Vite", project_url: "" },
+                { title: "Portfolio Builder", description: "Drag-and-drop portfolio generator for students with live preview and PDF export.", tech_stack: "React, TailwindCSS, jsPDF", project_url: "" }
+              ],
+              bio: "Detail-oriented frontend developer with verified React and TypeScript skills. Completed a 6-month internship at EPAM Systems building enterprise UI components. Seeking full-time junior frontend roles.",
+              intro_status: null
+            }
+          ];
+          setSearchResults(mockResults);
+        }
+        
+        setActiveTab('talent-search');
+        setIsDemoMode(forceDemo);
+        setLoading(false);
+        return;
       }
 
       // 1. Stats
@@ -1114,47 +1603,50 @@ function App() {
           boxShadow: 'var(--shadow-lg), var(--shadow-glow)',
           borderRadius: 'var(--radius-lg)'
         }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--primary-glow)',
-            border: '2px solid var(--primary)',
-            color: 'var(--primary)',
-            fontSize: '20px',
-            fontWeight: '800',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px auto',
-            fontFamily: 'var(--font-display)',
-            boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
-          }}>
-            PDP
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <UniLogo src="/pdp-logo.jpg" alt="PDP" fallbackText="PDP" />
           </div>
           
           <h2 style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '24px',
+            fontSize: '28px',
             fontWeight: '700',
             color: 'var(--text-main)',
-            margin: '0 0 4px 0',
+            margin: '0 0 2px 0',
             letterSpacing: '-0.02em'
           }}>
             {dt('welcomeTitle')}
           </h2>
 
-          <h3 style={{
+          <div style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '12px',
-            fontWeight: '600',
+            fontSize: '13px',
+            fontStyle: 'italic',
             color: 'var(--primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            margin: '0 0 16px 0'
+            margin: '0 0 14px 0',
+            fontWeight: 600
           }}>
-            {dt('welcomeSubtitle')}
-          </h3>
+            from campus to hired.
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            <h3 style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '11px',
+              fontWeight: '600',
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              margin: 0,
+              backgroundColor: 'var(--bg-badge-neutral)',
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-color)',
+              display: 'inline-block'
+            }}>
+              {dt('welcomeSubtitle')}
+            </h3>
+          </div>
           
           <p style={{
             fontSize: '14px',
@@ -1316,6 +1808,254 @@ function App() {
                   </button>
                 </div>
               </form>
+            ) : loginView === 'signup' ? (
+              <form onSubmit={handleEmployerSignup} style={{ display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                <h4 style={{
+                  margin: '0 0 4px 0',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--text-main)',
+                  fontFamily: 'var(--font-sans)'
+                }}>
+                  {dashboardLanguage === 'uz' ? "Ish beruvchi ro'yxatdan o'tishi" : "Employer Registration"}
+                </h4>
+
+                {loginError && (
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    lineHeight: '1.4'
+                  }}>
+                    {loginError}
+                  </div>
+                )}
+
+                {signupSuccessMessage && (
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--success-glow)',
+                    border: '1px solid var(--success)',
+                    color: 'var(--success)',
+                    fontSize: '13px',
+                    lineHeight: '1.4'
+                  }}>
+                    {signupSuccessMessage}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="signup-company" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dashboardLanguage === 'uz' ? 'Kompaniya nomi' : 'Company Name'} *
+                  </label>
+                  <input
+                    id="signup-company"
+                    type="text"
+                    value={signupCompanyName}
+                    onChange={(e) => setSignupCompanyName(e.target.value)}
+                    placeholder="e.g. Acme Corp"
+                    required
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '13px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="signup-name" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dashboardLanguage === 'uz' ? 'Vakil ismi' : 'Contact Person Name'} *
+                  </label>
+                  <input
+                    id="signup-name"
+                    type="text"
+                    value={signupContactName}
+                    onChange={(e) => setSignupContactName(e.target.value)}
+                    placeholder="e.g. John Doe"
+                    required
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '13px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="signup-email" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dashboardLanguage === 'uz' ? 'Email pochta' : 'Contact Email'} *
+                  </label>
+                  <input
+                    id="signup-email"
+                    type="email"
+                    value={signupContactEmail}
+                    onChange={(e) => setSignupContactEmail(e.target.value)}
+                    placeholder="employer@company.com"
+                    required
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '13px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="signup-phone" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dashboardLanguage === 'uz' ? 'Telefon raqami' : 'Contact Phone'}
+                  </label>
+                  <input
+                    id="signup-phone"
+                    type="text"
+                    value={signupContactPhone}
+                    onChange={(e) => setSignupContactPhone(e.target.value)}
+                    placeholder="e.g. +998901234567"
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '13px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label htmlFor="signup-reason" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                    {dashboardLanguage === 'uz' ? 'A\'zolik sababi / Maqsadi' : 'Reason for Joining'}
+                  </label>
+                  <textarea
+                    id="signup-reason"
+                    value={signupReasonForJoining}
+                    onChange={(e) => setSignupReasonForJoining(e.target.value)}
+                    placeholder={dashboardLanguage === 'uz' ? "Masalan: Kompaniyamizga Python dasturchilar kerak..." : "e.g. Hiring React/Python developers..."}
+                    style={{
+                      padding: '8px 10px',
+                      fontSize: '13px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      height: '60px',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label htmlFor="signup-pass" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                      {dashboardLanguage === 'uz' ? 'Parol' : 'Password'} *
+                    </label>
+                    <input
+                      id="signup-pass"
+                      type="password"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      style={{
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--card-bg)',
+                        color: 'var(--text-main)',
+                        fontFamily: 'var(--font-sans)',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label htmlFor="signup-confirm" style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>
+                      {dashboardLanguage === 'uz' ? 'Tasdiqlash' : 'Confirm'} *
+                    </label>
+                    <input
+                      id="signup-confirm"
+                      type="password"
+                      value={signupConfirmPassword}
+                      onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      style={{
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--card-bg)',
+                        color: 'var(--text-main)',
+                        fontFamily: 'var(--font-sans)',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '11px 24px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    backgroundColor: 'var(--primary)',
+                    border: 'none',
+                    color: '#ffffff',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    transition: 'all 0.2s ease',
+                    marginTop: '6px',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!loading) e.currentTarget.style.filter = 'brightness(1.1)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!loading) e.currentTarget.style.filter = 'none';
+                  }}
+                >
+                  {loading ? '...' : (dashboardLanguage === 'uz' ? 'Ro\'yxatdan o\'tish' : 'Register Account')}
+                </button>
+
+                <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => { setLoginView('signin'); setLoginError(''); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}
+                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-main)'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    {dashboardLanguage === 'uz' ? "Kirish sahifasiga qaytish" : "Back to Sign In"}
+                  </button>
+                </div>
+              </form>
             ) : (
               <form onSubmit={handleEmailPasswordLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'left' }}>
                 <h4 style={{
@@ -1423,6 +2163,18 @@ function App() {
                 >
                   {loading ? '...' : dt('loginButton')}
                 </button>
+
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px', gap: '8px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => { setLoginView('signup'); setLoginError(''); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '13px', fontWeight: '500', fontFamily: 'var(--font-sans)' }}
+                    onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                    onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  >
+                    {dashboardLanguage === 'uz' ? "Ish beruvchi ro'yxatdan o'tishi" : "Employer Sign Up"}
+                  </button>
+                </div>
               </form>
             )}
           </div>
@@ -1453,21 +2205,47 @@ function App() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo-container">
-          <div className="logo-icon">PDP</div>
+          <div className="logo-icon">{user?.role === 'employer' ? 'H' : 'PDP'}</div>
           <div className="logo-text">
-            <h1>PDP University</h1>
-            <p>{dt('subtitle')}</p>
+            <h1>{user?.role === 'employer' ? 'hired.uz' : 'PDP University'}</h1>
+            <p>{user?.role === 'employer' ? (dashboardLanguage === 'uz' ? 'Ish beruvchi portali' : 'Employer Portal') : dt('subtitle')}</p>
           </div>
         </div>
 
         <nav className="nav-links">
-          <button 
-            className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            <LayoutDashboard size={18} />
-            {dt('overview')}
-          </button>
+          {user?.role !== 'employer' && (
+            <button 
+              className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              <LayoutDashboard size={18} />
+              {dt('overview')}
+            </button>
+          )}
+          {user?.role === 'employer' && (
+            <button 
+              className={`nav-item ${activeTab === 'talent-search' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('talent-search');
+                handleEmployerSearch();
+              }}
+            >
+              <Search size={18} />
+              {dashboardLanguage === 'uz' ? 'Talantlar qidiruvi' : 'Talent Search'}
+            </button>
+          )}
+          {user?.role === 'employer' && (
+            <button 
+              className={`nav-item ${activeTab === 'employer-intros' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('employer-intros');
+                fetchEmployerIntroRequests();
+              }}
+            >
+              <ClipboardList size={18} />
+              {dashboardLanguage === 'uz' ? 'Mening so\'rovlarim' : 'Intro Requests'}
+            </button>
+          )}
           {['super_admin', 'career_staff', 'viewer'].includes(user?.role) && (
             <button 
               className={`nav-item ${activeTab === 'students' ? 'active' : ''}`}
@@ -1475,6 +2253,30 @@ function App() {
             >
               <Users size={18} />
               {dt('studentMap')}
+            </button>
+          )}
+          {['super_admin', 'career_staff'].includes(user?.role) && (
+            <button 
+              className={`nav-item ${activeTab === 'intro-approvals' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('intro-approvals');
+                fetchAdminIntroRequests();
+              }}
+            >
+              <CheckCircle size={18} />
+              {dashboardLanguage === 'uz' ? 'Bog\'lanish so\'rovlari' : 'Intro Requests'}
+            </button>
+          )}
+          {['super_admin', 'career_staff'].includes(user?.role) && (
+            <button 
+              className={`nav-item ${activeTab === 'employer-approvals' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('employer-approvals');
+                fetchEmployersList();
+              }}
+            >
+              <UserCheck size={18} />
+              {dashboardLanguage === 'uz' ? 'Ish beruvchilar' : 'Employer Approvals'}
             </button>
           )}
           {['super_admin', 'career_staff', 'viewer'].includes(user?.role) && (
@@ -1603,6 +2405,10 @@ function App() {
               {activeTab === 'staff-mgmt' && dt('staffAllowlist')}
               {activeTab === 'audit-logs' && dt('auditLogs')}
               {activeTab === 'settings' && dt('settings')}
+              {activeTab === 'talent-search' && (dashboardLanguage === 'uz' ? 'Talantlar qidiruvi' : 'Talent Marketplace Search')}
+              {activeTab === 'employer-intros' && (dashboardLanguage === 'uz' ? 'Mening so\'rovlarim' : 'Employer Intro Requests')}
+              {activeTab === 'intro-approvals' && (dashboardLanguage === 'uz' ? 'Talabalar bilan bog\'lanish so\'rovlari' : 'Intro Approval Center')}
+              {activeTab === 'employer-approvals' && (dashboardLanguage === 'uz' ? 'Ish beruvchilarni tasdiqlash' : 'Employer Approvals')}
             </h2>
             <p>
               {activeTab === 'overview' && (dashboardLanguage === 'uz' ? 'Real vaqtdagi samaradorlik va karyerani rivojlantirish ko\'rsatkichlari.' : 'Real-time performance metrics and career development insights.')}
@@ -1613,11 +2419,15 @@ function App() {
               {activeTab === 'staff-mgmt' && (dashboardLanguage === 'uz' ? 'Tizimdan foydalanish huquqiga ega xodimlar va ularning rollarini boshqarish.' : 'Manage authorized staff emails, roles, and department access control.')}
               {activeTab === 'audit-logs' && (dashboardLanguage === 'uz' ? 'Tizimdagi barcha ma\'muriy harakatlar jurnali.' : 'View access and administrative action logs for compliance and security.')}
               {activeTab === 'settings' && dt('settingsDesc')}
+              {activeTab === 'talent-search' && (dashboardLanguage === 'uz' ? 'Ish beruvchilar uchun tasdiqlangan talabalar ko\'nikmalarini aqlli qidirish.' : 'Semantic and filter-based search over verified, opted-in student talent.')}
+              {activeTab === 'employer-intros' && (dashboardLanguage === 'uz' ? 'Talabalar va karyera markazi tomonidan tasdiqlanish jarayonini kuzating.' : 'Track the status and approval of your introduction requests to talent.')}
+              {activeTab === 'intro-approvals' && (dashboardLanguage === 'uz' ? 'Ish beruvchilarning talabalar bilan bog\'lanish so\'rovlarini tasdiqlash yoki rad etish.' : 'Review, approve, or reject introduction requests submitted by employers.')}
+              {activeTab === 'employer-approvals' && (dashboardLanguage === 'uz' ? 'Ro\'yxatdan o\'tgan ish beruvchi kompaniyalarni tekshirish va tasdiqlash.' : 'Review and approve or reject employer account requests.')}
             </p>
           </div>
           <div className="flex-row-gap">
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              May 22, 2026
+              {new Date().toLocaleDateString(dashboardLanguage === 'uz' ? 'uz-UZ' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </span>
           </div>
         </header>
@@ -2086,10 +2896,27 @@ function App() {
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                          <button onClick={() => handleViewStudentDetail(match.telegram_id)} className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '11px' }}>
-                            Open Dossier
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px' }}>
+                          <button onClick={() => handleViewStudentDetail(match.telegram_id)} className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '11px' }}>
+                            {dashboardLanguage === 'uz' ? 'Dossierni ochish' : 'Open Dossier'}
                           </button>
+                          {user?.role === 'employer' && (
+                            match.intro_status === 'completed' ? (
+                              <span className="badge badge-success" style={{ padding: '6px 12px', fontSize: '11px' }}>Connected</span>
+                            ) : match.intro_status === 'pending_staff_approval' ? (
+                              <span className="badge badge-warning" style={{ padding: '6px 12px', fontSize: '11px' }}>Pending Staff</span>
+                            ) : match.intro_status === 'pending_student_approval' ? (
+                              <span className="badge badge-warning" style={{ padding: '6px 12px', fontSize: '11px' }}>Pending Student</span>
+                            ) : (
+                              <button 
+                                onClick={() => setShowRequestIntroModal(match.id ?? null)}
+                                className="btn btn-primary" 
+                                style={{ padding: '6px 12px', fontSize: '11px' }}
+                              >
+                                Request Intro
+                              </button>
+                            )
+                          )}
                         </div>
                       </div>
                     ))}
@@ -2351,6 +3178,7 @@ function App() {
                         <option value="academic_staff">Academic Staff</option>
                         <option value="teacher">Teacher</option>
                         <option value="viewer">Viewer</option>
+                        <option value="employer">Employer</option>
                       </select>
                     </div>
                     <div>
@@ -2712,6 +3540,623 @@ function App() {
                     </button>
                   </div>
 
+                </div>
+              </div>
+            )}
+
+            {/* TAB: TALENT SEARCH (EMPLOYER ONLY) */}
+            {activeTab === 'talent-search' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Search Panel */}
+                <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                      <input 
+                        type="text" 
+                        placeholder={dashboardLanguage === 'uz' ? "Aqlli qidiruv (masalan: Django va RAG biladigan Python dasturchi)..." : "Smart Search (e.g. Python developer with Django and RAG experience)..."}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleEmployerSearch()}
+                        style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '14px' }}
+                      />
+                    </div>
+                    <button 
+                      onClick={() => handleEmployerSearch()}
+                      className="btn btn-primary"
+                      style={{ padding: '0 24px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      disabled={searchLoading}
+                    >
+                      {searchLoading ? <RefreshCw size={16} className="spin-animation" /> : <Search size={16} />}
+                      {dashboardLanguage === 'uz' ? 'Izlash' : 'Search'}
+                    </button>
+                  </div>
+
+                  {/* Filters Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>{dashboardLanguage === 'uz' ? 'Lavozim' : 'Role'}</label>
+                      <select 
+                        value={searchRole} 
+                        onChange={(e) => {
+                          setSearchRole(e.target.value);
+                          handleEmployerSearch(searchQuery, e.target.value, searchMinScore, searchSkills);
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '13px' }}
+                      >
+                        <option value="All">{dashboardLanguage === 'uz' ? 'Barcha lavozimlar' : 'All Roles'}</option>
+                        <option value="Frontend Developer">Frontend Developer</option>
+                        <option value="Backend Developer">Backend Developer</option>
+                        <option value="Full-stack Developer">Full-stack Developer</option>
+                        <option value="Mobile Developer">Mobile Developer</option>
+                        <option value="Data Analyst">Data Analyst</option>
+                        <option value="AI/ML Engineer">AI/ML Engineer</option>
+                        <option value="DevOps Engineer">DevOps Engineer</option>
+                        <option value="UX/UI Designer">UX/UI Designer</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                        {dashboardLanguage === 'uz' ? 'Ko\'nikmalar' : 'Skills'}
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="Python, React..."
+                        value={searchSkills}
+                        onChange={(e) => setSearchSkills(e.target.value)}
+                        onBlur={() => handleEmployerSearch(searchQuery, searchRole, searchMinScore, searchSkills)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleEmployerSearch(searchQuery, searchRole, searchMinScore, searchSkills)}
+                        style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '13px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                        {dashboardLanguage === 'uz' ? 'Minimal tayyorlik' : 'Min Readiness'}: {searchMinScore}%
+                      </label>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        value={searchMinScore}
+                        onChange={(e) => setSearchMinScore(parseInt(e.target.value))}
+                        onMouseUp={() => handleEmployerSearch(searchQuery, searchRole, searchMinScore, searchSkills)}
+                        onTouchEnd={() => handleEmployerSearch(searchQuery, searchRole, searchMinScore, searchSkills)}
+                        style={{ width: '100%', height: '6px', borderRadius: '3px', accentColor: 'var(--primary)', cursor: 'pointer', marginTop: '12px' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                        {dashboardLanguage === 'uz' ? 'Universitet' : 'University'}
+                      </label>
+                      <select 
+                        value={searchUniversity} 
+                        onChange={(e) => {
+                          setSearchUniversity(e.target.value);
+                        }}
+                        style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '13px' }}
+                      >
+                        <option value="All">{dashboardLanguage === 'uz' ? 'Barcha universitetlar' : 'All Universities'}</option>
+                        <option value="PDP University">PDP University</option>
+                        <option value="Inha University in Tashkent">Inha University in Tashkent</option>
+                        <option value="NUU">National University of Uzbekistan</option>
+                        <option value="TUIT">TUIT</option>
+                        <option value="WIUT">WIUT</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '10px 14px', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    {dashboardLanguage === 'uz'
+                      ? 'Kontakt ma\'lumotlari faqat talaba va karyera markazi tasdiqlashidan keyin ochiladi.'
+                      : 'Contact details unlock only after student + career center approval.'}
+                  </div>
+                </div>
+
+                {/* Results Grid */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {searchResults.map((result) => {
+                    const readinessVal = result.readiness_score;
+                    const getBadgeColor = (score: number) => {
+                      if (score >= 80) return 'badge-success';
+                      if (score >= 50) return 'badge-warning';
+                      return ''; // gray
+                    };
+                    
+                    return (
+                      <div key={result.student_id} className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative', overflow: 'hidden' }}>
+                        
+                        {/* Top Row: Title & Readiness */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 600 }}>{result.name}</h3>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
+                              <span>{result.university}</span>
+                              <span>•</span>
+                              <span>{result.faculty} ({result.year}-kurs)</span>
+                            </div>
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span className={`badge ${getBadgeColor(readinessVal)}`} style={{ fontSize: '14px', padding: '6px 12px', fontWeight: 600 }}>
+                              {readinessVal ? `${readinessVal}% Readiness` : 'Profile Incomplete'}
+                            </span>
+                            {result.semantic_similarity < 1.0 && result.semantic_similarity > 0.1 && (
+                              <span style={{ fontSize: '11px', color: 'var(--primary)', marginTop: '4px', fontWeight: 500 }}>
+                                Match score: {Math.round(result.semantic_similarity * 100)}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* AI Match Explanation Insights */}
+                        {result.match_explanation && (
+                          <div style={{ padding: '12px 16px', backgroundColor: 'var(--primary-glow)', border: '1px solid var(--primary-border)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Award size={16} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                            <span style={{ fontSize: '13px', color: 'var(--text-main)', fontStyle: 'italic' }}>
+                              {result.match_explanation}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Bio */}
+                        {result.bio && (
+                          <p style={{ margin: '0', fontSize: '14px', color: 'var(--text-main)', lineHeight: 1.5 }}>
+                            {result.bio}
+                          </p>
+                        )}
+
+                        {/* Skills Block */}
+                        <div>
+                          <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            {dashboardLanguage === 'uz' ? 'Ko\'nikmalar' : 'Skills'}
+                          </span>
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {result.skills && result.skills.map((skill: string) => {
+                              const isVerified = result.verified_skills && result.verified_skills.includes(skill);
+                              return (
+                                <span 
+                                  key={skill} 
+                                  className="badge" 
+                                  style={{ 
+                                    fontSize: '11px', 
+                                    backgroundColor: isVerified ? 'var(--success-glow)' : 'var(--bg-main)', 
+                                    color: isVerified ? 'var(--success)' : 'var(--text-main)',
+                                    border: `1px solid ${isVerified ? 'var(--success)' : 'var(--border-color)'}`,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  {isVerified && <CheckCircle size={10} />}
+                                  {skill}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Experiences & Projects Accordions */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                              {dashboardLanguage === 'uz' ? 'Ish Tajribasi' : 'Experience'}
+                            </strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {result.experiences && result.experiences.map((exp: any, i: number) => (
+                                <div key={i} style={{ fontSize: '13px' }}>
+                                  <strong>{exp.role}</strong> {dashboardLanguage === 'uz' ? 'tashkilotda' : 'at'} <em>{exp.company}</em>
+                                  <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)' }}>
+                                    {exp.start_date} - {exp.end_date}
+                                  </span>
+                                </div>
+                              ))}
+                              {(!result.experiences || result.experiences.length === 0) && (
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No experience listed</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>
+                              {dashboardLanguage === 'uz' ? 'Loyihalar' : 'Projects'}
+                            </strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {result.projects && result.projects.map((proj: any, i: number) => (
+                                <div key={i} style={{ fontSize: '13px' }}>
+                                  <strong>{proj.title}</strong>
+                                  <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)' }}>
+                                    {proj.description}
+                                  </span>
+                                </div>
+                              ))}
+                              {(!result.projects || result.projects.length === 0) && (
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No projects listed</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Action Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '16px', marginTop: '8px' }}>
+                          <div>
+                            {result.contact_revealed ? (
+                              <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+                                <span>Phone: <strong>{result.phone_number}</strong></span>
+                                <span>Telegram: <strong>@{result.telegram_username}</strong></span>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                Contacts locked — requires approved introduction
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            {result.contact_revealed ? (
+                              <span className="badge badge-success" style={{ padding: '8px 16px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <CheckCircle size={14} /> Connected
+                              </span>
+                            ) : result.intro_status === 'pending_staff_approval' ? (
+                              <span className="badge badge-warning" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                                Pending Staff Review
+                              </span>
+                            ) : result.intro_status === 'approved_by_staff' ? (
+                              <span className="badge badge-warning" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                                Pending Student Consent
+                              </span>
+                            ) : result.intro_status === 'declined_by_student' ? (
+                              <span className="badge badge-danger" style={{ padding: '8px 16px', fontSize: '12px' }}>
+                                Declined by Student
+                              </span>
+                            ) : (
+                              <button 
+                                onClick={() => setShowRequestIntroModal(result.student_id)}
+                                className="btn btn-primary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '12px', cursor: 'pointer' }}
+                              >
+                                <Send size={14} />
+                                {dashboardLanguage === 'uz' ? 'Aloqa bog\'lanishni so\'rash' : 'Request Introduction'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                  
+                  {searchResults.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      No matching student talent profiles found. Try adjusting filters or search queries.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: EMPLOYER INTROS (EMPLOYER ONLY) */}
+            {activeTab === 'employer-intros' && (
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ margin: '0', fontSize: '18px', fontWeight: 600 }}>
+                    {dashboardLanguage === 'uz' ? 'Aloqa so\'rovlarim tarixi' : 'Introduction Request History'}
+                  </h3>
+                  <button onClick={() => fetchEmployerIntroRequests()} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}>
+                    <RefreshCw size={12} /> {dashboardLanguage === 'uz' ? 'Yangilash' : 'Refresh'}
+                  </button>
+                </div>
+
+                <div className="table-wrapper">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th>{dashboardLanguage === 'uz' ? 'Talaba' : 'Student'}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Lavozim' : 'Target Role'}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Mening xabarim' : 'Message Sent'}</th>
+                        <th>Status</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Kontaktlar' : 'Contact Details'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {employerIntros.map((req) => (
+                        <tr key={req.id}>
+                          <td>
+                            <strong>{req.student_name}</strong>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Readiness: {req.student_score}%</div>
+                          </td>
+                          <td>{req.student_role}</td>
+                          <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{req.message_from_employer}</td>
+                          <td>
+                            <span className={`badge ${
+                              req.status === 'completed' ? 'badge-success' :
+                              req.status === 'declined_by_student' ? 'badge-danger' :
+                              req.status === 'rejected_by_staff' ? 'badge-danger' :
+                              'badge-warning'
+                            }`} style={{ fontSize: '11px' }}>
+                              {req.status === 'pending_staff_approval' ? 'Pending Staff Review' :
+                               req.status === 'approved_by_staff' ? 'Pending Student Response' :
+                               req.status === 'rejected_by_staff' ? 'Rejected by Staff' :
+                               req.status === 'declined_by_student' ? 'Declined by Student' :
+                               'Connected ✓'}
+                            </span>
+                            {req.staff_decision_notes && (
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                CC Notes: {req.staff_decision_notes}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            {req.status === 'completed' ? (
+                              <div style={{ fontSize: '12px' }}>
+                                <div>Phone: {req.phone_number || 'N/A'}</div>
+                                <div>Telegram: @{req.telegram_username || 'N/A'}</div>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                Contacts Locked
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {employerIntros.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                            No introduction requests submitted yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: INTRO APPROVALS (ADMIN/STAFF ONLY) */}
+            {activeTab === 'intro-approvals' && (
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ margin: '0', fontSize: '18px', fontWeight: 600 }}>
+                    {dashboardLanguage === 'uz' ? 'Ish beruvchi so\'rovlarini tasdiqlash' : 'Employer Introduction Approvals'}
+                  </h3>
+                  <button onClick={() => fetchAdminIntroRequests()} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}>
+                    <RefreshCw size={12} /> {dashboardLanguage === 'uz' ? 'Yangilash' : 'Refresh'}
+                  </button>
+                </div>
+
+                <div className="table-wrapper">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th>{dashboardLanguage === 'uz' ? 'Ish beruvchi' : 'Employer'}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Nomzod' : 'Candidate'}</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Xabar' : 'Message'}</th>
+                        <th>Status</th>
+                        <th>{dashboardLanguage === 'uz' ? 'Harakatlar' : 'Actions'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminIntros.map((req) => (
+                        <tr key={req.id}>
+                          <td>
+                            <strong>{req.employer_name}</strong>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{req.employer_email}</div>
+                          </td>
+                          <td>
+                            <strong>{req.student_name}</strong>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{req.student_role}</div>
+                          </td>
+                          <td style={{ maxWidth: '300px', wordBreak: 'break-word', fontSize: '12px' }}>
+                            "{req.message_from_employer}"
+                          </td>
+                          <td>
+                            <span className={`badge ${
+                              req.status === 'completed' ? 'badge-success' :
+                              req.status === 'declined_by_student' ? 'badge-danger' :
+                              req.status === 'rejected_by_staff' ? 'badge-danger' :
+                              req.status === 'approved_by_staff' ? 'badge-warning' :
+                              'badge-warning'
+                            }`} style={{ fontSize: '11px' }}>
+                              {req.status.replace(/_/g, ' ')}
+                            </span>
+                            {req.staff_decision_notes && (
+                              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                Decision notes: {req.staff_decision_notes}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            {req.status === 'pending_staff_approval' ? (
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button 
+                                  onClick={() => {
+                                    const notes = prompt("Decision notes (optional):") || "";
+                                    handleApproveIntro(req.id, notes);
+                                  }}
+                                  className="btn btn-outline" 
+                                  style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--success)', border: '1px solid var(--success)', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                >
+                                  <Check size={12} /> Approve
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const notes = prompt("Reason for rejection:") || "";
+                                    if (notes) handleRejectIntro(req.id, notes);
+                                  }}
+                                  className="btn btn-outline" 
+                                  style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--danger)', border: '1px solid var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                >
+                                  <X size={12} /> Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Resolved</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {adminIntros.length === 0 && (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                            No requests pending approval.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: EMPLOYER APPROVALS (ADMIN/STAFF ONLY) */}
+            {activeTab === 'employer-approvals' && (
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ margin: '0', fontSize: '18px', fontWeight: 600 }}>
+                    {dashboardLanguage === 'uz' ? 'Ish beruvchi hisoblarini tasdiqlash' : 'Employer Account Verification'}
+                  </h3>
+                  <button onClick={() => fetchEmployersList()} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '12px' }}>
+                    <RefreshCw size={12} /> {dashboardLanguage === 'uz' ? 'Yangilash' : 'Refresh'}
+                  </button>
+                </div>
+
+                <div className="table-wrapper">
+                  {employersLoading ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                      Loading employers...
+                    </div>
+                  ) : (
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th>{dashboardLanguage === 'uz' ? 'Kompaniya' : 'Company'}</th>
+                          <th>{dashboardLanguage === 'uz' ? 'Vakil va kontaktlar' : 'Contact Representative'}</th>
+                          <th>{dashboardLanguage === 'uz' ? 'A\'zolik maqsadi' : 'Reason for Joining'}</th>
+                          <th>Status</th>
+                          <th>{dashboardLanguage === 'uz' ? 'Harakatlar' : 'Actions'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {employersList.map((emp) => (
+                          <tr key={emp.id}>
+                            <td>
+                              <strong>{emp.company_name}</strong>
+                            </td>
+                            <td>
+                              <strong>{emp.contact_name}</strong>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{emp.contact_email}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{emp.contact_phone || '—'}</div>
+                            </td>
+                            <td style={{ maxWidth: '300px', wordBreak: 'break-word', fontSize: '12px' }}>
+                              {emp.reason_for_joining || '—'}
+                            </td>
+                            <td>
+                              <span className={`badge ${
+                                emp.status === 'approved' ? 'badge-success' :
+                                emp.status === 'rejected' ? 'badge-danger' :
+                                'badge-warning'
+                              }`} style={{ fontSize: '11px' }}>
+                                {emp.status.toUpperCase()}
+                              </span>
+                            </td>
+                            <td>
+                              {emp.status === 'pending' ? (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => handleApproveEmployer(emp.id)}
+                                    className="btn btn-outline" 
+                                    style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--success)', border: '1px solid var(--success)', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                  >
+                                    <Check size={12} /> Approve
+                                  </button>
+                                  <button 
+                                    onClick={() => handleRejectEmployer(emp.id)}
+                                    className="btn btn-outline" 
+                                    style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--danger)', border: '1px solid var(--danger)', display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                                  >
+                                    <X size={12} /> Reject
+                                  </button>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  {emp.status === 'approved' && (
+                                    <button 
+                                      onClick={() => handleRejectEmployer(emp.id)}
+                                      className="btn btn-outline" 
+                                      style={{ padding: '4px 8px', fontSize: '10px', color: 'var(--danger)', border: '1px solid var(--danger)', cursor: 'pointer' }}
+                                    >
+                                      Deactivate
+                                    </button>
+                                  )}
+                                  {emp.status === 'rejected' && (
+                                    <button 
+                                      onClick={() => handleApproveEmployer(emp.id)}
+                                      className="btn btn-outline" 
+                                      style={{ padding: '4px 8px', fontSize: '10px', color: 'var(--success)', border: '1px solid var(--success)', cursor: 'pointer' }}
+                                    >
+                                      Re-activate
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {employersList.length === 0 && (
+                          <tr>
+                            <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                              No employer accounts found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* REQUEST INTRODUCTION MODAL */}
+            {showRequestIntroModal !== null && (
+              <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '24px' }}>
+                <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '24px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '18px', fontWeight: 600 }}>
+                    {dashboardLanguage === 'uz' ? 'Aloqa bog\'lanish uchun xabar yozing' : 'Write Introduction Pitch'}
+                  </h3>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                    {dashboardLanguage === 'uz' ? 'Nima uchun bu talaba bilan bog\'lanmoqchi ekanligingizni qisqacha yozing (Karyera markazi buni tekshiradi va talabaga yuboradi).' : 'Briefly describe why you want to connect with this student (Career center will review this and forward it to the student).'}
+                  </p>
+                  
+                  <textarea 
+                    value={introRequestMessage}
+                    onChange={(e) => setIntroRequestMessage(e.target.value)}
+                    placeholder={dashboardLanguage === 'uz' ? "Masalan: Biz Uzum Tech kompaniyasidanmiz, sizning profilingiz bizning Python vakansiyamizga juda mos tushdi..." : "e.g. We are from EPAM, your profile matches our frontend developer vacancy perfectly..."}
+                    style={{ width: '100%', height: '120px', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', fontSize: '13px', resize: 'none', marginBottom: '20px' }}
+                  />
+                  
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={() => {
+                        setShowRequestIntroModal(null);
+                        setIntroRequestMessage('');
+                      }}
+                      className="btn btn-outline"
+                      style={{ padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => handleRequestIntro(showRequestIntroModal, introRequestMessage)}
+                      className="btn btn-primary"
+                      style={{ padding: '8px 16px', fontSize: '13px', cursor: 'pointer' }}
+                      disabled={!introRequestMessage.trim()}
+                    >
+                      Send Request
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

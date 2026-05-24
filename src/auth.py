@@ -23,7 +23,7 @@ from src.db import get_db_connection
 logger = logging.getLogger(__name__)
 
 # ── Constants ──
-VALID_ROLES = {"super_admin", "career_staff", "academic_staff", "teacher", "viewer"}
+VALID_ROLES = {"super_admin", "career_staff", "academic_staff", "teacher", "viewer", "employer"}
 VALID_DEPARTMENTS = {"career", "academic", "teaching"}
 JWT_ALGORITHM = "HS256"
 

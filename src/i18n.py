@@ -7,7 +7,7 @@ TRANSLATIONS = {
     # --- Welcome & Start ---
     "welcome": {
         "uz": (
-            "👋 Assalomu alaykum! Men — *Career AI Assistant*, "
+            "👋 Assalomu alaykum! Men — *hired.uz*, "
             "universitet karyera markazining sun'iy intellekt yordamchisiman.\n\n"
             "Men sizga quyidagilarda yordam bera olaman:\n"
             "📋 Ko'nikmalaringizni baholash (Skill Passport)\n"
@@ -16,7 +16,7 @@ TRANSLATIONS = {
             "Tilni tanlang / Выберите язык / Choose language:"
         ),
         "ru": (
-            "👋 Здравствуйте! Я — *Career AI Assistant*, "
+            "👋 Здравствуйте! Я — *hired.uz*, "
             "AI-помощник карьерного центра университета.\n\n"
             "Я могу помочь вам с:\n"
             "📋 Оценка навыков (Skill Passport)\n"
@@ -25,7 +25,7 @@ TRANSLATIONS = {
             "Tilni tanlang / Выберите язык / Choose language:"
         ),
         "en": (
-            "👋 Hello! I'm *Career AI Assistant*, "
+            "👋 Hello! I'm *hired.uz*, "
             "your university career center AI helper.\n\n"
             "I can help you with:\n"
             "📋 Skill assessment (Skill Passport)\n"

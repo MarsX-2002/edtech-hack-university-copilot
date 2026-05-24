@@ -10,11 +10,12 @@ from telegram.error import TimedOut, NetworkError, Conflict
 from src.ingestion import ingest_knowledge_base
 from src.db import init_db
 from src.bot_handlers import (
-    start_command, admin_command, broadcast_command,
-    handle_callback_query, handle_message, handle_contact
+    start_command, admin_command, broadcast_command, consent_command,
+    handle_callback_query, handle_message, handle_contact, handle_document
 )
 # Guard against multiple bot instances
 LOCK_FILE = BASE_DIR / "bot.lock"
+# ... [rest remains the same but imports are updated] ...
 
 def another_instance_running() -> bool:
     """Check for existing bot instance via lock file and running process.
@@ -142,8 +143,10 @@ def main():
     app.add_handler(CommandHandler("admin", admin_command))
     app.add_handler(CommandHandler("stats", admin_command))
     app.add_handler(CommandHandler("broadcast", broadcast_command))
+    app.add_handler(CommandHandler("consent", consent_command))
     app.add_handler(CallbackQueryHandler(handle_callback_query))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Register global error handler

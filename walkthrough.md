@@ -1,84 +1,131 @@
-# Walkthrough — PDP University Career Center
+# Walkthrough: hired.uz Verified Talent Marketplace & Features
 
-**PDP University Career Center** is a production-grade white-labelable Career Center AI platform currently branded for **PDP University**. It provides a dual-sided experience:
-1. **Student Side (Telegram Bot)**: Powered by a multi-lingual state machine for skill audits, ATS resume validation, STAR interview practice, and vacancy matchmaking.
-2. **Admin Side (Vite + React Dashboard)**: High-contrast, projector-ready analytical panel with student skill directories, curriculum deficit analyzers, and detailed student dossiers.
+We have successfully pivoted the platform into **hired.uz**—a verified student Talent Marketplace connecting employers with pre-screened student candidates. This walkthrough details the implementation, database changes, search system, consent workflows, and E2E verification logs.
 
 ---
 
-## 🚀 Key Secure Admin Authentication Updates
+## 🚀 Key System Components
 
-We implemented a robust, production-grade custom authentication flow for staff members, deleting all public "Demo Mode" buttons and Google OAuth options from the viewport:
+### 1. Privacy-First Database Schema (`src/db.py`)
+We migrated the database to support a fully normalized student profile schema and employer account approvals.
+* **Consent Fields & Audit**: Added `consent_opt_in`, `profile_completed` flags, and `consent_given_at` and `consent_revoked_at` timestamp audit columns to the `students` table.
+* **Employers Table**: Introduced a dedicated `employers` table linked to `staff_users` (via `staff_user_id`), storing `company_name`, `contact_name`, `contact_email`, `contact_phone`, and `status` ('pending', 'approved', 'rejected').
+* **Normalized Data Tables**:
+  - `talent_profiles`: Stores student bios, portfolio links, experience summaries, and resume links.
+  - `student_skills`: Tracks skill names, verification statuses, and assessment scores.
+  - `experiences`, `education`, `projects`: Capture structural academic and professional records.
+  - `intro_requests`: Manages the state machine for connections between employers and students.
+* **CRUD Helpers**: Implemented `save_student_profile_full` and `get_student_profile_full` to ensure seamless read/writes.
 
-### 1. Database Schema Migrations
-* Altered `staff_users` dynamically to support `password_hash TEXT` and `must_change_password INTEGER DEFAULT 1`.
-* Runs SQLite `ALTER TABLE` queries safely on startup to ensure existing installations upgrade gracefully.
+### 2. Multi-Stage Introduction Workflow (`src/api.py`, `src/bot_handlers.py`)
+To prevent unauthorized extraction/scraping of student contacts, data is revealed through a strict approval flow:
+```mermaid
+sequenceDiagram
+    participant Employer as Employer Dashboard
+    participant Staff as Career Center Staff
+    participant Student as Student Bot (Telegram)
+    
+    Employer->>Staff: Request Introduction (Pending Staff Approval)
+    Staff->>Student: Approve Request -> Send Telegram Button Msg
+    Note over Student: Shows Accept / Decline buttons
+    alt Student Accepts
+        Student->>Employer: Accept Intro -> Contact Details Released (Connected)
+    else Student Declines
+        Student->>Employer: Decline Intro -> Request Rejected (Declined)
+    end
+```
+* **Status Updates**: Request status transitions from `pending_staff_approval` -> `approved_by_staff` -> `pending_student_approval` -> `completed` or `declined_by_student` (final state: `rejected_by_staff` or `declined_by_student`).
+* **API Dynamic Masking & Anonymization**: Contact info (`telegram_username`, `phone_number`, and `student_id_code`) is masked at the API layer (returns `None`) for all searches unless the intro request status for that `employer_id` and `student_id` is `'completed'`. Additionally, names are anonymized to **first name only** (e.g. "Ali" instead of "Ali Valiyev") when contact access is not yet completed.
 
-### 2. Password Hashing (PBKDF2 SHA-256)
-* Uses standard library `hashlib.pbkdf2_hmac` and `secrets.token_hex` for secure hashing and salt management with zero-dependency binaries.
-* Automatically hashes the default admin password (`admin123` from `.env`) on boot for `INITIAL_ADMIN_EMAIL` and sets their change requirement to `0` (false).
+### 3. Smart Hybrid Search Engine (`src/talent_search.py`)
+Features an intelligent candidate discovery engine:
+* **SQL Prescreening**: Queries the SQLite database to filter candidates by consent status (`consent_opt_in=1`), target role, and minimum readiness score.
+* **ChromaDB Semantic Search**: Translates natural language employer queries into vector embeddings and matches them against candidate profiles.
+* **Deterministic Reranking**: Combines the semantic cosine similarity with candidate readiness scores (0-100) and verified skill match counts.
+* **Project/Internship Focused Matches**: Avoids misleading years of professional experience, instead reporting structural project/internship experience counts (e.g. *"Has 2 project/internship experience(s)"*).
+* **AI Match Explanation**: Provides clear explanations for why a candidate matches (e.g., *"Has project/internship experience at PDP Academy and verified Python skill"*).
 
-### 3. Temporary Password Flow
-* Admin account creation (via POST `/api/admin/staff` or CLI `manage.py add-staff`) auto-generates a random 8-character temporary password (`secrets.token_hex(4)`), hashes it in the DB, sets `must_change_password = 1`, and outputs it for staff dispatch.
+### 4. Bot AI Resume Parsing (`src/bot_handlers.py`, `src/career_modes.py`)
+* **Structured Parsing**: Students can upload PDF/DOCX resumes or paste text. The bot uses Gemini AI to parse the content into structured JSON (skills, experience, education, projects).
+* **Readiness Scorer**: Analyzes the parsed profile to compute a readiness score from 0 to 100.
+* **Draft Validation**: The bot prints a draft card to the student for confirmation. Database updates are strictly blocked until the student explicitly clicks `parsed_profile_confirm`.
 
-### 4. Forced Password Changes
-* Signing in with a temporary password returns a redirection flag without setting JWT tokens.
-* The frontend intercepts the flag and presents a **Set New Password** card.
-* Submitting the new password updates it in the database via `/auth/change-password`, clears the requirement flag, and logs the user in.
-
-### 5. Hidden Developer Backdoor
-* Presenters and developers can boot the dashboard into offline mock/demo mode by signing in with the email `demo@pdp.uz` (no backend required).
+### 5. Employer & Approvals Dashboard UI (`dashboard/src/App.tsx`)
+* **Employer restricted View**: When an employer logs in, they are redirected exclusively to the **Talent Search** and **Intro Tracker** views, hiding internal administration.
+* **Employer Account Verification tab**: Adds a dedicated panel for Career Center admins to review registered employer requests, click Approve (enabling their dashboard access) or Reject.
+* **Anonymized Student Cards**: Displays glassmorphic dial indicators for readiness scores, verified skill badges, and expandable experience timelines. Contact info is masked with a "Lock" icon until the introduction is completed.
 
 ---
 
-## 🛠️ Verification & E2E Logs
+## 🛠️ Verification & Build Logs
 
-### 1. Build Verification
-Verified that the Vite compiler produces production bundles with zero compilation or type errors:
+### 1. Vite React Dashboard Compilation
+We verified that the Vite React TypeScript compiler produces build bundles with zero type errors:
 ```bash
+cd dashboard
 npm run build
 ```
 **Output:**
 ```
 vite v8.0.14 building client environment for production...
 ✓ 1738 modules transformed.
+rendering chunks (1)...
+
+computing gzip size...
 dist/index.html                   0.89 kB │ gzip:  0.49 kB
 dist/assets/index-C_SAMRIy.css   12.51 kB │ gzip:  2.97 kB
-dist/assets/index-C7ORAa9E.js   292.47 kB │ gzip: 82.92 kB
-✓ built in 128ms
+dist/assets/index-BvOlO8Sz.js   328.55 kB │ gzip: 89.63 kB
+✓ built in 162ms
 ```
 
-### 2. E2E Staff Authentication Tests
-We executed the integration script `scratch/verify_real_auth.py` which validated the E2E flow:
+### 2. Database Table Schema Verification
+Running the DB initializer validates that all table schemas and migrations apply correctly:
 ```bash
-PYTHONPATH=. .venv/bin/python scratch/verify_real_auth.py
+python3 -c "from src.db import init_db; init_db()"
+```
+**Output:**
+*(Executes cleanly with exit code 0, creating all indexes and normalized tables).*
+
+### 3. E2E Employer Approvals & Privacy Tests
+We executed the integration script `scratch/verify_employer_validation.py` which validated the E2E flow:
+```bash
+.venv/bin/python3 scratch/verify_employer_validation.py
 ```
 **Output:**
 ```
-🧪 Starting E2E Staff Hashed Authentication Test...
+🚀 Starting Employer Approvals & Privacy Enforcement E2E Validation...
+[Gemini] Embedding batch 1/1 (1 chunks) using models/gemini-embedding-001...
+Test 1: Verification that pending employer is blocked from searching...
+  ✅ PASS: Pending employer was blocked as expected. Error: Employer account is pending approval by Career Center staff.
+Test 2: Verification that approved employer can search...
+[Gemini] Embedding batch 1/1 (1 chunks) using models/gemini-embedding-001...
+  ✅ PASS: Approved employer searched successfully. Found 1 candidate(s).
 
-1. Logging in as Super Admin (seed)...
-  Status: 200, Response: {'id': 1, 'email': 'mirjalol0331@gmail.com', 'name': 'Mirjalol0331', 'role': 'super_admin', 'department': 'career', 'avatar_url': None, 'must_change_password': False}
+Test 3: Verification of name anonymization and contact details masking...
+[Gemini] Embedding batch 1/1 (1 chunks) using models/gemini-embedding-001...
+  Candidate Name returned: 'Ali'
+  ✅ PASS: Full name is anonymized to first name only.
+  Telegram handle: None
+  Phone number: None
+  Contact revealed flag: False
+  ✅ PASS: Personal contact details are masked.
 
-2. Creating a new career staff account...
-  Status: 200, Response: {'status': 'ok', 'id': 3, 'temp_password': '8053c3f6'}
-  ✅ Generated Temp Password: 8053c3f6
+Test 4: Verification that non-consented student is excluded from search...
+[Gemini] Embedding batch 1/1 (1 chunks) using models/gemini-embedding-001...
+  ✅ PASS: Non-consented student is excluded from talent search pool.
 
-3. Logging in as new staff member with temporary password...
-  Status: 200, Response: {'must_change_password': True, 'email': 'teststaff@pdp.uz'}
+Test 5: Verification of Staff approving a pending employer account...
+  Employer status before approval: pending
+  Employer status after approval: approved
+  ✅ PASS: Employer status successfully updated to approved.
 
-4. Changing password for new staff member...
-  Status: 200, Response: {'id': 3, 'email': 'teststaff@pdp.uz', 'name': 'Test Staff Member', 'role': 'career_staff', 'department': 'career', 'avatar_url': None, 'must_change_password': False}
-
-5. Verifying old temporary password fails now...
-  Status: 401, Response: {'detail': "Noto'g'ri parol. / Incorrect password."}
-
-6. Verifying login with new password succeeds...
-  Status: 200, Response: {'id': 3, 'email': 'teststaff@pdp.uz', 'name': 'Test Staff Member', 'role': 'career_staff', 'department': 'career', 'avatar_url': None, 'must_change_password': False}
-
-7. Checking that new career_staff is blocked from accessing allowlist APIs...
-  Status: 403, Response: {'detail': 'Insufficient permissions. Required: super_admin'}
-  ✅ Access correctly blocked for non-admin role!
-
-🎉 ALL E2E STAFF AUTHENTICATION TESTS PASSED SUCCESSFULLY!
+🎉 ALL E2E EMPLOYER APPROVALS AND PRIVACY TESTS PASSED SUCCESSFULLY!
 ```
+
+---
+
+## 🔒 Previous Secure Auth & Usability Updates (Retained)
+* **Secure Staff Password Hashes**: Standard library `hashlib.pbkdf2_hmac` SHA-256 password hashing.
+* **Forced Password Change**: Staff accounts with temporary passwords must update their credentials on first login.
+* **Cross-Origin Cookies**: Configured CORS middleware in `src/api.py` and `App.tsx` fetch requests (`credentials: 'include'`) to ensure auth cookies work correctly across different ports (`http://localhost:5173` and `http://127.0.0.1:8000`).
+* **UI Cleanups**: Hided system telemetry, audit logs, and metrics cards from standard staff, and renamed page subtitle to *"skills missing across students vs employer vacancies."*

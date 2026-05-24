@@ -60,6 +60,18 @@ class StaffCreateRequest(BaseModel):
     name: str
     role: str
     department: str
+    company_name: Optional[str] = None
+    contact_phone: Optional[str] = None
+
+
+class EmployerRegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+    company_name: str
+    contact_phone: Optional[str] = None
+    reason_for_joining: Optional[str] = None
+
 
 class StaffUpdateRequest(BaseModel):
     role: Optional[str] = None
@@ -75,6 +87,55 @@ class ScheduleInterviewRequest(BaseModel):
 # ─── ENDPOINTS ───
 
 # ─── AUTH ENDPOINTS ───
+
+@app.post("/auth/register-employer")
+@limiter.limit("5/minute")
+async def register_employer(request: Request, body: EmployerRegisterRequest):
+    """Public self-registration endpoint for employers. Creates a pending employer account."""
+    email = body.email.strip().lower()
+    name = body.name.strip()
+    company_name = body.company_name.strip()
+    contact_phone = body.contact_phone.strip() if body.contact_phone else ""
+    reason_for_joining = body.reason_for_joining.strip() if body.reason_for_joining else ""
+    password = body.password
+    
+    if not email or not password or not name or not company_name:
+        raise HTTPException(status_code=400, detail="All fields except phone number and reason are required")
+        
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if user already exists
+    cursor.execute("SELECT id FROM staff_users WHERE LOWER(email) = ?;", (email,))
+    if cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=400, detail="Email address is already registered.")
+        
+    # Create staff_users record (initially inactive)
+    pwd_hash = hash_password(password)
+    cursor.execute(
+        """INSERT INTO staff_users (email, name, role, department, is_active, password_hash, must_change_password)
+           VALUES (?, ?, 'employer', 'career', 0, ?, 0);""",
+        (email, name, pwd_hash)
+    )
+    new_id = cursor.lastrowid
+    
+    # Create employers record
+    cursor.execute(
+        """INSERT INTO employers (staff_user_id, company_name, contact_name, contact_email, contact_phone, status, reason_for_joining)
+           VALUES (?, ?, ?, ?, ?, 'pending', ?);""",
+        (new_id, company_name, name, email, contact_phone, reason_for_joining)
+    )
+    
+    conn.commit()
+    conn.close()
+    
+    audit_log("system", email, "employer_registered", details=f"Employer company={company_name} registered, status=pending")
+    return {"status": "ok", "message": "Employer account registered successfully. Pending staff approval."}
+
 
 @app.post("/auth/login")
 @limiter.limit("10/minute")
@@ -101,6 +162,23 @@ async def auth_login(request: Request, body: LoginRequest, response: Response):
         )
         
     if not staff["is_active"]:
+        # Check if employer is pending or rejected for a better message
+        if staff["role"] == "employer":
+            cursor.execute("SELECT status FROM employers WHERE staff_user_id = ?;", (staff["id"],))
+            employer = cursor.fetchone()
+            if employer:
+                if employer["status"] == "pending":
+                    conn.close()
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Sizning hisobingiz hali tasdiqlanmagan. Karyera markazi tasdiqlashini kuting. / Your employer account is pending approval by the Career Center."
+                    )
+                elif employer["status"] == "rejected":
+                    conn.close()
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Sizning hisobingiz rad etilgan. / Your employer account has been rejected."
+                    )
         conn.close()
         audit_log("system", email, "failed_login", details="Account deactivated")
         raise HTTPException(status_code=403, detail="Hisob faolsizlantirilgan. / Account deactivated.")
@@ -509,7 +587,7 @@ def get_student_detail(telegram_id: str, request: Request, staff = Depends(requi
 
 @app.get("/api/vacancies")
 @limiter.limit("60/minute")
-def get_vacancies_list(request: Request, staff = Depends(require_role("super_admin", "career_staff", "viewer"))):
+def get_vacancies_list(request: Request, staff = Depends(require_role("super_admin", "career_staff", "viewer", "employer"))):
     """Retrieve all vacancies in the system."""
     audit_from_request(request, staff, "dashboard_access", details="vacancies_list")
     try:
@@ -520,7 +598,7 @@ def get_vacancies_list(request: Request, staff = Depends(require_role("super_adm
 
 @app.get("/api/vacancies/{vacancy_id}/matching-students")
 @limiter.limit("60/minute")
-def get_vacancy_student_matches(vacancy_id: str, request: Request, staff = Depends(require_role("super_admin", "career_staff", "viewer"))):
+def get_vacancy_student_matches(vacancy_id: str, request: Request, staff = Depends(require_role("super_admin", "career_staff", "viewer", "employer"))):
     """Rank all registered students for a specific vacancy based on their matching scores."""
     try:
         vacancies = load_vacancies()
@@ -531,6 +609,9 @@ def get_vacancy_student_matches(vacancy_id: str, request: Request, staff = Depen
         students = load_students()
         required_skills = {s.lower().strip() for s in vacancy.get("skills_required", [])}
         v_title = vacancy.get("title", "").lower()
+        
+        employer_id = int(staff["id"])
+        role = staff["role"]
         
         matches = []
         for sid, s in students.items():
@@ -554,7 +635,12 @@ def get_vacancy_student_matches(vacancy_id: str, request: Request, staff = Depen
             if "intern" in v_title or "junior" in v_title:
                 score += 10
                 
-            score = round(score)
+            if score > 0:
+                score = 40 + (score * 0.45)
+            else:
+                score = 40
+                
+            score = min(88, round(score))
             
             # Map matched vs missing skills
             matched_list = []
@@ -568,14 +654,32 @@ def get_vacancy_student_matches(vacancy_id: str, request: Request, staff = Depen
                     missing_list.append(req)
                     
             if score > 0 or len(overlap) > 0:
+                intro_status = None
+                intro_req_id = None
+                if role == "employer":
+                    conn_intro = get_db_connection()
+                    cursor_intro = conn_intro.cursor()
+                    cursor_intro.execute(
+                        "SELECT id, status FROM intro_requests WHERE employer_id = ? AND student_id = ? ORDER BY id DESC LIMIT 1;",
+                        (employer_id, s.get("id"))
+                    )
+                    intro_row = cursor_intro.fetchone()
+                    conn_intro.close()
+                    if intro_row:
+                        intro_status = intro_row["status"]
+                        intro_req_id = intro_row["id"]
+                        
                 matches.append({
+                    "id": s.get("id"),
                     "telegram_id": sid,
                     "name": s.get("name"),
                     "target_role": s.get("target_role"),
                     "match_score": score,
                     "skills_matched": matched_list,
                     "skills_missing": missing_list,
-                    "readiness_score": s.get("readiness_score")
+                    "readiness_score": s.get("readiness_score"),
+                    "intro_status": intro_status,
+                    "intro_request_id": intro_req_id
                 })
                 
         # Sort by match score descending
@@ -735,8 +839,18 @@ def add_staff(request: Request, body: StaffCreateRequest, staff = Depends(requir
            VALUES (?, ?, ?, ?, 1, ?, 1);""",
         (email, body.name, body.role, body.department, pwd_hash)
     )
-    conn.commit()
     new_id = cursor.lastrowid
+    
+    if body.role == "employer":
+        company = body.company_name or "Unknown Company"
+        phone = body.contact_phone or ""
+        cursor.execute(
+            """INSERT INTO employers (staff_user_id, company_name, contact_name, contact_email, contact_phone, status)
+               VALUES (?, ?, ?, ?, ?, 'pending');""",
+            (new_id, company, body.name, email, phone)
+        )
+        
+    conn.commit()
     conn.close()
     
     audit_from_request(request, staff, "staff_user_created", target_type="staff", target_id=str(new_id), details=f"Added staff email={email}")
@@ -794,6 +908,63 @@ def deactivate_staff(id: int, request: Request, staff = Depends(require_role("su
     
     revoke_all_tokens(id)
     audit_from_request(request, staff, "staff_user_deactivated", target_type="staff", target_id=str(id))
+    return {"status": "ok"}
+
+
+@app.get("/api/admin/employers")
+def get_employers(staff = Depends(require_role("super_admin", "career_staff"))):
+    """Fetch all employers and their verification status."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT e.id, e.staff_user_id, e.company_name, e.contact_name, e.contact_email, e.contact_phone, e.status, e.reason_for_joining, e.created_at, su.is_active
+           FROM employers e
+           JOIN staff_users su ON e.staff_user_id = su.id
+           ORDER BY e.id DESC;"""
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+@app.post("/api/admin/employers/{id}/approve")
+def approve_employer(id: int, request: Request, staff = Depends(require_role("super_admin", "career_staff"))):
+    """Approve employer account, allowing them to search and request introductions."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM employers WHERE id = ?;", (id,))
+    emp = cursor.fetchone()
+    if not emp:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Employer not found")
+        
+    cursor.execute("UPDATE employers SET status = 'approved' WHERE id = ?;", (id,))
+    cursor.execute("UPDATE staff_users SET is_active = 1 WHERE id = ?;", (emp["staff_user_id"],))
+    conn.commit()
+    conn.close()
+    
+    audit_from_request(request, staff, "employer_approved", target_type="employer", target_id=str(id))
+    return {"status": "ok"}
+
+
+@app.post("/api/admin/employers/{id}/reject")
+def reject_employer(id: int, request: Request, staff = Depends(require_role("super_admin", "career_staff"))):
+    """Reject/Deactivate employer account."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM employers WHERE id = ?;", (id,))
+    emp = cursor.fetchone()
+    if not emp:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Employer not found")
+        
+    cursor.execute("UPDATE employers SET status = 'rejected' WHERE id = ?;", (id,))
+    cursor.execute("UPDATE staff_users SET is_active = 0 WHERE id = ?;", (emp["staff_user_id"],))
+    conn.commit()
+    conn.close()
+    
+    revoke_all_tokens(emp["staff_user_id"])
+    audit_from_request(request, staff, "employer_rejected", target_type="employer", target_id=str(id))
     return {"status": "ok"}
 
 
@@ -971,6 +1142,358 @@ async def schedule_mock_interview(telegram_id: str, request: Request, body: Sche
         target_type="student",
         target_id=telegram_id,
         details=f"Scheduled mock interview for role: {role}"
+    )
+    return {"status": "ok"}
+
+
+# ──────────────── EMPLOYER & INTRO REQUESTS ENDPOINTS ────────────────
+
+class IntroRequestCreate(BaseModel):
+    student_id: int
+    message: str
+
+class IntroRequestAction(BaseModel):
+    notes: Optional[str] = None
+
+@app.get("/api/employer/search")
+def search_talent(
+    query: Optional[str] = None,
+    target_role: Optional[str] = None,
+    min_readiness: Optional[float] = None,
+    skills: Optional[str] = None,
+    staff = Depends(require_role("super_admin", "career_staff", "employer"))
+):
+    """Hybrid AI search for student profiles, accessible by employers and staff."""
+    from src.talent_search import search_students_hybrid
+    
+    employer_id = int(staff["id"])
+    role = staff["role"]
+    
+    # Check approved status for employer
+    if role == "employer":
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM employers WHERE staff_user_id = ?;", (employer_id,))
+        emp_row = cursor.fetchone()
+        conn.close()
+        if not emp_row or emp_row["status"] != "approved":
+            raise HTTPException(status_code=403, detail="Employer account is pending approval by Career Center staff.")
+            
+    skills_list = None
+    if skills:
+        skills_list = [s.strip() for s in skills.split(",") if s.strip()]
+        
+    results = search_students_hybrid(
+        query=query,
+        target_role=target_role,
+        min_readiness=min_readiness,
+        skills_filter=skills_list
+    )
+    
+    # Check approved intro requests to decide if we reveal contacts
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Fetch all completed intro requests for this employer
+    cursor.execute(
+        "SELECT student_id FROM intro_requests WHERE employer_id = ? AND status = 'completed';",
+        (employer_id,)
+    )
+    approved_student_ids = {r["student_id"] for r in cursor.fetchall()}
+    conn.close()
+    
+    # Process visibility
+    for r in results:
+        s_id = r["student_id"]
+        # Retrieve telegram details from DB
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT telegram_username, phone_number, student_id FROM students WHERE id = ?;", (s_id,))
+        details = cursor.fetchone()
+        conn.close()
+        
+        has_access = (role in ["super_admin", "career_staff"]) or (s_id in approved_student_ids)
+        
+        if has_access and details:
+            r["telegram_username"] = details["telegram_username"]
+            r["phone_number"] = details["phone_number"]
+            r["student_id_code"] = details["student_id"]
+            r["contact_revealed"] = True
+        else:
+            if "name" in r and r["name"]:
+                parts = r["name"].split()
+                r["name"] = parts[0] if parts else "Candidate"
+            r["telegram_username"] = None
+            r["phone_number"] = None
+            r["student_id_code"] = None
+            r["contact_revealed"] = False
+            
+        # Get intro request status for this student and employer
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, status FROM intro_requests WHERE employer_id = ? AND student_id = ? ORDER BY id DESC LIMIT 1;",
+            (employer_id, s_id)
+        )
+        intro_row = cursor.fetchone()
+        conn.close()
+        r["intro_status"] = intro_row["status"] if intro_row else None
+        r["intro_request_id"] = intro_row["id"] if intro_row else None
+        
+    return results
+
+@app.post("/api/employer/intro-request")
+def create_intro_req(
+    body: IntroRequestCreate,
+    request: Request,
+    staff = Depends(require_role("employer"))
+):
+    """Employer requests an introduction to a student."""
+    employer_id = int(staff["id"])
+    student_id = body.student_id
+    
+    # Check approved status for employer
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM employers WHERE staff_user_id = ?;", (employer_id,))
+    emp_row = cursor.fetchone()
+    conn.close()
+    if not emp_row or emp_row["status"] != "approved":
+        raise HTTPException(status_code=403, detail="Employer account is pending approval by Career Center staff.")
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if student exists
+    cursor.execute("SELECT id, name FROM students WHERE id = ?;", (student_id,))
+    student_row = cursor.fetchone()
+    if not student_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    # Check if request already exists
+    cursor.execute(
+        "SELECT id, status FROM intro_requests WHERE employer_id = ? AND student_id = ? ORDER BY id DESC LIMIT 1;",
+        (employer_id, student_id)
+    )
+    existing = cursor.fetchone()
+    if existing and existing["status"] in ["pending_staff_approval", "approved_by_staff", "completed"]:
+        conn.close()
+        raise HTTPException(status_code=400, detail=f"Intro request already exists with status: {existing['status']}")
+        
+    cursor.execute(
+        """INSERT INTO intro_requests (employer_id, student_id, message_from_employer) 
+           VALUES (?, ?, ?);""",
+        (employer_id, student_id, body.message)
+    )
+    req_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    
+    audit_from_request(
+        request,
+        staff,
+        "intro_request_created",
+        target_type="student",
+        target_id=str(student_id),
+        details=f"Created intro request #{req_id} for student {student_row['name']}"
+    )
+    return {"status": "ok", "request_id": req_id}
+
+@app.get("/api/employer/intro-requests")
+def get_employer_intros(staff = Depends(require_role("employer"))):
+    """Fetch all intro requests created by the active employer."""
+    employer_id = int(staff["id"])
+    
+    # Check approved status for employer
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM employers WHERE staff_user_id = ?;", (employer_id,))
+    emp_row = cursor.fetchone()
+    conn.close()
+    if not emp_row or emp_row["status"] != "approved":
+        raise HTTPException(status_code=403, detail="Employer account is pending approval by Career Center staff.")
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT ir.id, ir.student_id, ir.status, ir.message_from_employer, 
+                  ir.staff_decision_notes, ir.created_at, ir.updated_at,
+                  s.name as student_name, s.target_role as student_role, s.readiness_score as student_score
+           FROM intro_requests ir
+           JOIN students s ON ir.student_id = s.id
+           WHERE ir.employer_id = ?
+           ORDER BY ir.id DESC;""",
+        (employer_id,)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    
+    results = []
+    for r in rows:
+        d = dict(r)
+        # If status is completed, load contact info too
+        if d["status"] == "completed":
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT telegram_username, phone_number FROM students WHERE id = ?;", (d["student_id"],))
+            s_det = cursor.fetchone()
+            conn.close()
+            if s_det:
+                d["telegram_username"] = s_det["telegram_username"]
+                d["phone_number"] = s_det["phone_number"]
+        else:
+            d["telegram_username"] = None
+            d["phone_number"] = None
+        results.append(d)
+    return results
+
+@app.get("/api/admin/intro-requests")
+def get_admin_intros(staff = Depends(require_role("super_admin", "career_staff"))):
+    """Fetch all intro requests for Career Staff to review."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT ir.id, ir.employer_id, ir.student_id, ir.status, ir.message_from_employer, 
+                  ir.staff_decision_notes, ir.created_at, ir.updated_at,
+                  s.name as student_name, s.target_role as student_role, s.telegram_user_id as student_telegram_id,
+                  su.name as employer_name, su.email as employer_email
+           FROM intro_requests ir
+           JOIN students s ON ir.student_id = s.id
+           JOIN staff_users su ON ir.employer_id = su.id
+           ORDER BY ir.id DESC;"""
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+@app.post("/api/admin/intro-requests/{id}/approve")
+async def approve_intro_staff(id: int, request: Request, body: IntroRequestAction, staff = Depends(require_role("super_admin", "career_staff"))):
+    """Staff approves employer request. Triggers a Telegram interactive push to student."""
+    from src.config import TELEGRAM_BOT_TOKEN
+    from datetime import datetime
+    import httpx
+    import json
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT ir.*, s.name as student_name, s.telegram_user_id, s.language, su.name as employer_name
+           FROM intro_requests ir
+           JOIN students s ON ir.student_id = s.id
+           JOIN staff_users su ON ir.employer_id = su.id
+           WHERE ir.id = ?;""",
+        (id,)
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Intro request not found")
+        
+    if row["status"] != "pending_staff_approval":
+        conn.close()
+        raise HTTPException(status_code=400, detail=f"Request is in status: {row['status']}")
+        
+    cursor.execute(
+        "UPDATE intro_requests SET status = 'approved_by_staff', staff_decision_by = ?, staff_decision_notes = ?, updated_at = ? WHERE id = ?;",
+        (staff["id"], body.notes, datetime.now().isoformat(), id)
+    )
+    conn.commit()
+    conn.close()
+    
+    # Trigger Telegram Notification to student
+    if TELEGRAM_BOT_TOKEN:
+        lang = row["language"] or "uz"
+        emp_name = row["employer_name"]
+        
+        if lang == "ru":
+            msg_text = (
+                f"💼 *Запрос на знакомство от работодателя*:\n"
+                f"Представитель *{emp_name}* хочет связаться с вами для обсуждения карьерных возможностей.\n\n"
+                f"Вы согласны поделиться своими контактами (телефон и Telegram)?"
+            )
+            btn_yes = "✅ Да, поделиться"
+            btn_no = "❌ Нет, отклонить"
+        elif lang == "en":
+            msg_text = (
+                f"💼 *Intro Request from Employer*:\n"
+                f"Employer *{emp_name}* wants to connect with you regarding job opportunities.\n\n"
+                f"Do you consent to share your contact details (phone and Telegram)?"
+            )
+            btn_yes = "✅ Yes, share"
+            btn_no = "❌ No, decline"
+        else: # uz
+            msg_text = (
+                f"💼 *Ish beruvchidan aloqa so'rovi*:\n"
+                f"*{emp_name}* kompaniyasi siz bilan vakansiyalar bo'yicha bog'lanishni so'ramoqda.\n\n"
+                f"Kontaktlaringizni (telefon va Telegram) baham ko'rishga rozimisiz?"
+            )
+            btn_yes = "✅ Ha, ulashish"
+            btn_no = "❌ Yo'q, rad etish"
+            
+        keyboard = {
+            "inline_keyboard": [
+                [
+                    {"text": btn_yes, "callback_data": f"intro_accept:{id}"},
+                    {"text": btn_no, "callback_data": f"intro_decline:{id}"}
+                ]
+            ]
+        }
+        
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": int(row["telegram_user_id"]),
+            "text": msg_text,
+            "parse_mode": "Markdown",
+            "reply_markup": json.dumps(keyboard)
+        }
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(url, json=payload, timeout=10.0)
+        except Exception as e:
+            print(f"Failed to send Telegram notification: {e}")
+            
+    audit_from_request(
+        request,
+        staff,
+        "intro_request_approved_by_staff",
+        target_type="student",
+        target_id=str(row["student_id"]),
+        details=f"Staff approved request #{id}. Student push notification sent."
+    )
+    return {"status": "ok"}
+
+@app.post("/api/admin/intro-requests/{id}/reject")
+def reject_intro_staff(id: int, request: Request, body: IntroRequestAction, staff = Depends(require_role("super_admin", "career_staff"))):
+    """Staff rejects employer request."""
+    from datetime import datetime
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM intro_requests WHERE id = ?;", (id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Intro request not found")
+        
+    if row["status"] != "pending_staff_approval":
+        conn.close()
+        raise HTTPException(status_code=400, detail=f"Request is in status: {row['status']}")
+        
+    cursor.execute(
+        "UPDATE intro_requests SET status = 'rejected_by_staff', staff_decision_by = ?, staff_decision_notes = ?, updated_at = ? WHERE id = ?;",
+        (staff["id"], body.notes, datetime.now().isoformat(), id)
+    )
+    conn.commit()
+    conn.close()
+    
+    audit_from_request(
+        request,
+        staff,
+        "intro_request_rejected_by_staff",
+        target_type="student",
+        target_id=str(row["student_id"]),
+        details=f"Staff rejected request #{id}. Notes: {body.notes}"
     )
     return {"status": "ok"}
 
