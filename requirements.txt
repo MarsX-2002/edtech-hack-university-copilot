@@ -1,8 +1,15 @@
-streamlit
 chromadb
 pypdf
 openai
-google-generativeai
+google-genai
 python-dotenv
 python-telegram-bot
 numpy
+psutil
+
+# FastAPI backend (serves the React dashboard at dashboard/)
+fastapi
+uvicorn
+slowapi
+httpx
+PyJWT
