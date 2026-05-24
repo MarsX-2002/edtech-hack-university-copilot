@@ -1,8 +1,9 @@
 # hired.uz — Verified Student Talent Marketplace 🎓💼
 
 > **Tagline**: from campus to hired.
+> **Student Telegram Bot**: [@university_ai_agent_bot](https://t.me/university_ai_agent_bot) (username: `@university_ai_agent_bot`)
 
-hired.uz is a unified career services and talent marketplace platform. It automates career center operations for universities while serving as a secure pipeline of verified student talent for partner employer companies.
+hired.uz is a unified career services and talent marketplace platform. It automates career center operations for universities while serving as a secure pipeline of verified student talent for partner employer companies. It features a modern, premium visitor landing page that introduces the platform, outlines value propositions, and lets visitors sample talent via an interactive preview widget.
 
 ---
 
@@ -11,6 +12,7 @@ hired.uz is a unified career services and talent marketplace platform. It automa
 hired.uz operates on a two-sided value proposition:
 1. **For Universities**: Automation of resume reviews, skill gap analysis, stateful interview simulators, and vacancy matching.
 2. **For Employers**: Direct access to a pool of verified, pre-screened student talent sorted by algorithmic readiness scores.
+3. **For Students**: A 24/7 AI career copilot, resume optimization, and warm introductions to hiring partners.
 
 ### 🔒 Student Consent and Data Privacy
 We enforce a strict privacy-first model:
@@ -26,20 +28,25 @@ We enforce a strict privacy-first model:
 
 ## 🌟 Key Features
 
-### 1. Student Telegram Bot Onboarding & AI Tools
+### 1. Interactive Landing Page
+* 🌐 **Stakeholder Benefits Matrix**: Clearly explains the problems solved and solutions provided for Universities, Employers, and Students.
+* 🎮 **Interactive Talent Preview Widget**: Clickable skill tags (Python, React, DevOps, QA) showcasing sample verified student profile card previews in real-time.
+* 🚀 **Clear CTAs**: One-click redirection for employers to the secure sign-in portal and students to the Telegram bot.
+
+### 2. Student Telegram Bot Onboarding & AI Tools
 * 📋 **AI Resume Parser**: Students upload a PDF/DOCX resume or copy-paste raw work history. Gemini AI extracts education, experience, projects, and skills into a structured schema.
 * 💯 **Readiness Scoring**: The system automatically scores profiles from 0 to 100 based on completeness, target role alignment, and verified skills.
 * 📊 **Self-Service Controls**: Students can edit their profile drafts, toggle search visibility (`/consent`), and link introductory videos or portfolios.
 * 🗣️ **Interview Simulator**: Stateful technical and behavioral practice using STAR evaluation.
-* 💼 **Curriculum deficit & Vacancy Match**: Real-time alignment against active partner listings.
+* 💼 **Curriculum Deficit & Vacancy Match**: Real-time alignment against active partner listings.
 
-### 2. Employer Talent Search UI
+### 3. Employer Talent Search UI
 * 🔍 **Smart Hybrid Search**: Natural language search (e.g. *"React developer with Python knowledge and 2 years experience"*) powered by **ChromaDB semantic search** + SQLite filters.
 * 📊 **Algorithmic Ranking**: Results sorted by profile readiness scores (0-100) and match relevance.
 * 💡 **Explainable Matches**: AI-generated reasoning explaining *why* the student fits the query (e.g. *"Has 2 years Django experience and verified Python skill"*).
 * 📁 **Intro Request Management**: Status board tracking approvals (`Pending Review`, `Pending Student Response`, `Connected`, `Declined`).
 
-### 3. Career Center Admin Panel
+### 4. Career Center Admin Panel
 * 🏫 **Introduction Approvals**: Review queue for employer-to-student connection requests.
 * 🗺️ **Student Talent Map**: Unified directory of all student profiles, readiness scores, and verified skill badges.
 * 📈 **Overview Analytics**: Aggregated dashboard showing registered users, average readiness, target roles, and AI safety monitoring.

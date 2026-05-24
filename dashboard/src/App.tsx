@@ -105,7 +105,26 @@ const DASHBOARD_TRANSLATIONS = {
     talentPoolDesc: "Platformada ro'yxatdan o'tgan barcha talabalarning ko'nikmalari va tayyorlik darajalari.",
     searchPlaceholder: "Ism yoki ko'nikma bo'yicha qidirish...",
     allRoles: "Barcha lavozimlar",
-    allReadiness: "Barcha tayyorgarlik darajalari"
+    allReadiness: "Barcha tayyorgarlik darajalari",
+    landingHeroTitle: "hired.uz",
+    landingHeroTagline: "Universitetlar va ish beruvchilar uchun tasdiqlangan talabalar karyera bozori.",
+    landingHeroTaglineSub: "Karyera olamiga ilk qadam.",
+    landingStudentCTA: "Student AI Copilot",
+    landingPortalCTA: "Tizimga kirish",
+    landingUnivTitle: "Universitetlar uchun",
+    landingUnivProb: "Talabalar faolligini va haqiqiy bilim darajasini kuzatish qiyin, o'quv dasturlari bozor talabidan orqada qolishi mumkin.",
+    landingUnivSol: "LMS tizimidan loyihalar va git faollik yig'iladi, bozor talablariga qarab o'quv rejasi kamchiliklari tahlil qilinadi.",
+    landingEmpTitle: "Ish beruvchilar uchun",
+    landingEmpProb: "Nomzodlarning kelib tushadigan rezyumelarida ko'nikmalar ko'pincha bo'rttirib yozilgan, sovuq aloqalar samarasiz.",
+    landingEmpSol: "Tasdiqlangan ko'nikma va tayyorgarlik darajalariga ega talabalar bazasi, o'zaro tasdiqdan o'tgan iliq tanishtiruv (intro).",
+    landingStudTitle: "Talabalar uchun",
+    landingStudProb: "Ish tajribasiz munosib stajirovkalar topish va rezyume orqali o'zini ko'rsatish murakkab.",
+    landingStudSol: "Telegramdagi 24/7 AI yordamchi portfolioni tahlil qiladi, kamchiliklarni o'rgatadi va ish beruvchilarga to'g'ridan-to'g'ri bog'laydi.",
+    landingPreviewTitle: "Iste'dodlar bazasini sinab ko'ring",
+    landingPreviewDesc: "Quyidagi ko'nikma tugmalarini bosib, platformadagi tasdiqlangan talabalar profillarini ko'ring:",
+    landingPrivacyNote: "Aloqa ma'lumotlari faqat talaba va universitet roziligidan so'ng ochiladi.",
+    landingBackToHome: "← Bosh sahifaga qaytish",
+    landingTrusted: "Universitet karyera markazlari tomonidan ishonilgan:"
   },
   en: {
     title: "hired.uz",
@@ -180,7 +199,26 @@ const DASHBOARD_TRANSLATIONS = {
     talentPoolDesc: "Browse and manage all registered student profiles and their readiness scores.",
     searchPlaceholder: "Search by name or skills...",
     allRoles: "All Target Roles",
-    allReadiness: "All Readiness Levels"
+    allReadiness: "All Readiness Levels",
+    landingHeroTitle: "hired.uz",
+    landingHeroTagline: "Verified student talent marketplace for universities and employers.",
+    landingHeroTaglineSub: "From campus to hired.",
+    landingStudentCTA: "Student AI Copilot",
+    landingPortalCTA: "Portal Sign In",
+    landingUnivTitle: "For Universities",
+    landingUnivProb: "Lack of visibility into real-time student job-readiness, and difficulty aligning curricula with shifting industry demands.",
+    landingUnivSol: "Aggregated project tracking, git activity monitoring, and automated curriculum deficit reports based on employer needs.",
+    landingEmpTitle: "For Employers",
+    landingEmpProb: "Sifting through unverified resumes with overstated skills, and low response rates from cold candidate outreach.",
+    landingEmpSol: "Searchable verified talent database with readiness scores, and direct introductions requiring mutual student & admin consent.",
+    landingStudTitle: "For Students",
+    landingStudProb: "Hard to secure internships without prior experience, and resumes rarely showcase actual coding or technical capabilities.",
+    landingStudSol: "24/7 AI career copilot via Telegram analyzes github/projects, conducts mock interviews, and triggers warm employer intros.",
+    landingPreviewTitle: "Explore the Talent Database",
+    landingPreviewDesc: "Click the skill tags below to preview matching verified candidate profiles:",
+    landingPrivacyNote: "Contact details unlock only after student and career center approvals.",
+    landingBackToHome: "← Back to Home Page",
+    landingTrusted: "Trusted by University Career Centers:"
   }
 };
 
@@ -297,6 +335,74 @@ function UniLogo({ src, alt, fallbackText }: UniLogoProps) {
   );
 }
 
+interface PreviewCandidate {
+  name: string;
+  university: string;
+  role: string;
+  readiness: number;
+  skills: string[];
+  projects: string[];
+}
+
+const PREVIEW_CANDIDATES: { [key: string]: PreviewCandidate[] } = {
+  Python: [
+    {
+      name: "D. Rustamov",
+      university: "PDP University",
+      role: "Backend Engineer (Python/Django)",
+      readiness: 84,
+      skills: ["Python", "Django", "PostgreSQL", "REST API", "Docker"],
+      projects: ["E-Commerce Backend", "LMS Integration API"]
+    },
+    {
+      name: "S. Alimov",
+      university: "Inha University",
+      role: "Python Data Developer",
+      readiness: 78,
+      skills: ["Python", "FastAPI", "Pandas", "Scikit-Learn", "SQLAlchemy"],
+      projects: ["Sales Forecasting Tool", "Scraper Dashboard"]
+    }
+  ],
+  React: [
+    {
+      name: "M. Halimova",
+      university: "National University of Uzbekistan (NUU)",
+      role: "Frontend Engineer (React/TS)",
+      readiness: 89,
+      skills: ["React", "TypeScript", "Tailwind CSS", "Redux Toolkit", "Vite"],
+      projects: ["Interactive Talent Map UI", "Admin Dashboard Customizer"]
+    },
+    {
+      name: "K. Karimov",
+      university: "PDP University",
+      role: "React Native Developer",
+      readiness: 75,
+      skills: ["React", "React Native", "JavaScript", "Firebase", "CSS Modules"],
+      projects: ["Student Portfolio App", "Fitness Tracker Mobile UI"]
+    }
+  ],
+  DevOps: [
+    {
+      name: "A. Tursunov",
+      university: "Inha University",
+      role: "Junior DevOps Engineer",
+      readiness: 81,
+      skills: ["Docker", "Kubernetes", "Linux", "GitHub Actions", "Nginx", "Bash"],
+      projects: ["Automated Deploy Pipeline", "Multi-service Compose Stack"]
+    }
+  ],
+  QA: [
+    {
+      name: "N. Olimova",
+      university: "National University of Uzbekistan (NUU)",
+      role: "QA Automation Engineer",
+      readiness: 72,
+      skills: ["Selenium", "PyTest", "Postman", "CI/CD", "Quality Control"],
+      projects: ["API Integration Test Suite", "E-Commerce E2E Suite"]
+    }
+  ]
+};
+
 function App() {
   const [user, setUser] = useState<any | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -308,6 +414,8 @@ function App() {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const [loginView, setLoginView] = useState<'signin' | 'signup'>('signin');
+  const [viewMode, setViewMode] = useState<'landing' | 'auth'>('landing');
+  const [previewSkill, setPreviewSkill] = useState<string>('Python');
   const [signupCompanyName, setSignupCompanyName] = useState('');
   const [signupContactName, setSignupContactName] = useState('');
   const [signupContactEmail, setSignupContactEmail] = useState('');
@@ -1561,6 +1669,349 @@ function App() {
   }
 
   if (!user) {
+    if (viewMode === 'landing') {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          width: '100vw',
+          backgroundColor: 'var(--bg-main)',
+          backgroundImage: 'radial-gradient(circle at top right, rgba(16, 185, 129, 0.08), transparent 500px), radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.04), transparent 500px)',
+          fontFamily: 'var(--font-sans)',
+          color: 'var(--text-main)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '0 24px 80px 24px',
+          overflowX: 'hidden'
+        }}>
+          {/* Header/Navbar */}
+          <header style={{
+            width: '100%',
+            maxWidth: '1200px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '24px 0',
+            borderBottom: '1px solid var(--border-color)',
+            marginBottom: '60px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div className="logo-icon" style={{ width: '36px', height: '36px', fontSize: '18px' }}>H</div>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--text-main)' }}>
+                hired.uz
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              {/* Language Switcher */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  onClick={() => { setDashboardLanguage('uz'); localStorage.setItem('dashboardLanguage', 'uz'); }} 
+                  className={`btn btn-outline ${dashboardLanguage === 'uz' ? 'btn-primary' : ''}`}
+                  style={{ padding: '4px 10px', fontSize: '11px', minWidth: '70px' }}
+                >
+                  🇺🇿 UZ
+                </button>
+                <button 
+                  onClick={() => { setDashboardLanguage('en'); localStorage.setItem('dashboardLanguage', 'en'); }} 
+                  className={`btn btn-outline ${dashboardLanguage === 'en' ? 'btn-primary' : ''}`}
+                  style={{ padding: '4px 10px', fontSize: '11px', minWidth: '70px' }}
+                >
+                  🇬🇧 EN
+                </button>
+              </div>
+              
+              <button 
+                onClick={() => setViewMode('auth')}
+                className="btn btn-primary"
+                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
+              >
+                {dt('landingPortalCTA')}
+              </button>
+            </div>
+          </header>
+
+          {/* Main Hero Container */}
+          <main style={{ width: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            
+            {/* Hero Content */}
+            <div style={{ maxWidth: '800px', marginBottom: '48px' }}>
+              <h1 style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'min(56px, 10vw)',
+                fontWeight: 850,
+                lineHeight: 1.1,
+                letterSpacing: '-0.03em',
+                margin: '0 0 16px 0',
+                background: 'linear-gradient(to right, #ffffff, var(--primary))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                {dt('landingHeroTitle')}
+              </h1>
+              
+              <p style={{
+                fontSize: 'min(22px, 5vw)',
+                fontWeight: 500,
+                color: 'var(--text-main)',
+                lineHeight: 1.4,
+                margin: '0 0 8px 0'
+              }}>
+                {dt('landingHeroTagline')}
+              </p>
+              
+              <p style={{
+                fontSize: '16px',
+                fontStyle: 'italic',
+                fontWeight: 600,
+                color: 'var(--primary)',
+                margin: '0 0 32px 0'
+              }}>
+                {dt('landingHeroTaglineSub')}
+              </p>
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '40px' }}>
+                <button 
+                  onClick={() => setViewMode('auth')}
+                  className="btn btn-primary"
+                  style={{ padding: '14px 28px', fontSize: '15px', fontWeight: 600, boxShadow: 'var(--shadow-glow)' }}
+                >
+                  {dt('landingPortalCTA')}
+                </button>
+                
+                <a 
+                  href="https://t.me/university_ai_agent_bot" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="btn btn-outline"
+                  style={{ 
+                    padding: '14px 28px', 
+                    fontSize: '15px', 
+                    fontWeight: 600, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    borderColor: '#0088cc',
+                    color: '#38bdf8',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.53-1.39.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.36-.49.99-.75 3.88-1.69 6.47-2.8 7.77-3.32 3.7-1.49 4.47-1.75 4.97-1.76.11 0 .36.03.52.16.14.11.18.27.2.39-.01.07 0 .16-.01.24z"/>
+                  </svg>
+                  {dt('landingStudentCTA')} (t.me)
+                </a>
+              </div>
+
+              {/* University Partners */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
+                  {dt('landingTrusted')}
+                </span>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <UniLogo src="/pdp-logo.jpg" alt="PDP" fallbackText="PDP" />
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>PDP University</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <UniLogo src="/inha-logo.jpg" alt="Inha" fallbackText="INHA" />
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>Inha University</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                    <UniLogo src="/nuu-logo.jpg" alt="NUU" fallbackText="NUU" />
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>National University</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Problem-Solution Matrix */}
+            <div style={{ 
+              width: '100%', 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+              gap: '24px', 
+              marginBottom: '64px',
+              textAlign: 'left'
+            }}>
+              {/* Universities Card */}
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>🎓</span>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700 }}>{dt('landingUnivTitle')}</h3>
+                </div>
+                
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#ef4444', marginBottom: '4px', letterSpacing: '0.05em' }}>Challenge</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>{dt('landingUnivProb')}</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '4px', letterSpacing: '0.05em' }}>Solution</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.4' }}>{dt('landingUnivSol')}</div>
+                </div>
+              </div>
+
+              {/* Employers Card */}
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>💼</span>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700 }}>{dt('landingEmpTitle')}</h3>
+                </div>
+                
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#ef4444', marginBottom: '4px', letterSpacing: '0.05em' }}>Challenge</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>{dt('landingEmpProb')}</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '4px', letterSpacing: '0.05em' }}>Solution</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.4' }}>{dt('landingEmpSol')}</div>
+                </div>
+              </div>
+
+              {/* Students Card */}
+              <div className="card" style={{ padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-lg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '20px' }}>🚀</span>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700 }}>{dt('landingStudTitle')}</h3>
+                </div>
+                
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: '#ef4444', marginBottom: '4px', letterSpacing: '0.05em' }}>Challenge</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.4' }}>{dt('landingStudProb')}</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: '4px', letterSpacing: '0.05em' }}>Solution</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.4' }}>{dt('landingStudSol')}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Widget - Talent Preview Showcase */}
+            <div className="card" style={{ 
+              width: '100%', 
+              padding: '32px', 
+              border: '1px solid var(--border-color)', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '24px',
+              backgroundColor: 'var(--bg-card)',
+              borderRadius: 'var(--radius-lg)',
+              background: 'linear-gradient(180deg, var(--bg-card) 0%, rgba(17, 24, 39, 0.6) 100%)',
+              boxShadow: 'var(--shadow-lg)'
+            }}>
+              <div style={{ textAlign: 'center', maxWidth: '600px' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800 }}>
+                  {dt('landingPreviewTitle')}
+                </h3>
+                <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>
+                  {dt('landingPreviewDesc')}
+                </p>
+              </div>
+
+              {/* Clickable Tags */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {Object.keys(PREVIEW_CANDIDATES).map(skill => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => setPreviewSkill(skill)}
+                    className={`btn ${previewSkill === skill ? 'btn-primary' : 'btn-outline'}`}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-sm)',
+                      boxShadow: previewSkill === skill ? 'var(--shadow-glow)' : 'none'
+                    }}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+
+              {/* Talent Grid Display */}
+              <div style={{
+                width: '100%',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '20px',
+                textAlign: 'left'
+              }}>
+                {(PREVIEW_CANDIDATES[previewSkill] || []).map((candidate, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '12px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>{candidate.name}</h4>
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: 'bold', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          backgroundColor: candidate.readiness >= 80 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                          color: candidate.readiness >= 80 ? '#10b981' : '#f59e0b',
+                          border: candidate.readiness >= 80 ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
+                        }}>
+                          {candidate.readiness}% Ready
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 500 }}>
+                        🎓 {candidate.university}
+                      </div>
+
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--primary)', marginBottom: '12px' }}>
+                        {candidate.role}
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                        {candidate.skills.map((s, i) => (
+                          <span key={i} style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--bg-badge-neutral)', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                        Verified Projects
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12px', color: 'var(--text-main)', lineHeight: '1.4' }}>
+                        {candidate.projects.map((p, i) => (
+                          <li key={i}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', borderTop: '1px solid var(--border-color)', width: '100%', paddingTop: '16px', textAlign: 'center' }}>
+                🔒 {dt('landingPrivacyNote')}
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
     return (
       <div style={{
         display: 'flex',
@@ -2044,7 +2495,7 @@ function App() {
                   {loading ? '...' : (dashboardLanguage === 'uz' ? 'Ro\'yxatdan o\'tish' : 'Register Account')}
                 </button>
 
-                <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <button 
                     type="button" 
                     onClick={() => { setLoginView('signin'); setLoginError(''); }}
@@ -2053,6 +2504,15 @@ function App() {
                     onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
                   >
                     {dashboardLanguage === 'uz' ? "Kirish sahifasiga qaytish" : "Back to Sign In"}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setViewMode('landing'); setLoginError(''); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}
+                    onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                    onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  >
+                    {dt('landingBackToHome')}
                   </button>
                 </div>
               </form>
@@ -2164,7 +2624,7 @@ function App() {
                   {loading ? '...' : dt('loginButton')}
                 </button>
 
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginTop: '16px' }}>
                   <button 
                     type="button" 
                     onClick={() => { setLoginView('signup'); setLoginError(''); }}
@@ -2173,6 +2633,15 @@ function App() {
                     onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
                   >
                     {dashboardLanguage === 'uz' ? "Ish beruvchi ro'yxatdan o'tishi" : "Employer Sign Up"}
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setViewMode('landing'); setLoginError(''); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', fontWeight: '500', fontFamily: 'var(--font-sans)' }}
+                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--text-main)'}
+                    onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    {dt('landingBackToHome')}
                   </button>
                 </div>
               </form>
