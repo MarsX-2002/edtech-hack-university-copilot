@@ -1,8 +1,9 @@
 name: Deploy hired.uz
 
 on:
-  push:
-    branches: [main]
+  # Manual-only: auto-deploy on push is disabled while the owner's GitHub
+  # account is billing-locked (use ./deploy.sh meanwhile). Re-add the push
+  # trigger once Actions is available again.
   workflow_dispatch:
 
 # Never run two production deploys at once
