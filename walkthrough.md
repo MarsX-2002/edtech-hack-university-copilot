@@ -54,6 +54,13 @@ Features an intelligent candidate discovery engine:
 * **Employer restricted View**: When an employer logs in, they are redirected exclusively to the **Talent Search** and **Intro Tracker** views, hiding internal administration.
 * **Employer Account Verification tab**: Adds a dedicated panel for Career Center admins to review registered employer requests, click Approve (enabling their dashboard access) or Reject.
 * **Anonymized Student Cards**: Displays glassmorphic dial indicators for readiness scores, verified skill badges, and expandable experience timelines. Contact info is masked with a "Lock" icon until the introduction is completed.
+* **Branded Login Page**: Styled the login page card with the **hired.uz** brand name, the slogan *"from campus to hired."* as an emerald-green italicized tagline right beneath the title, a small badge indicating `"Career Center Portal"`, and the tagline description *"verified student talent marketplace for universities and employers."* in lowercase as per the design guidelines. Also styled the university logo icon using a gorgeous, high-contrast linear gradient and emerald shadow overlay.
+
+### 6. Employer Self-Registration Flow
+We implemented a self-registration channel for new employers to request marketplace access:
+* **Public endpoint (`/auth/register-employer`)**: Validates input data, hashes passwords securely, and registers an inactive employer account with status `pending`.
+* **Frontend Toggle Form**: Allows new employers to switch the login card to "Employer Sign Up" directly from the login page, register, and await approvals.
+* **Admin Review**: Career Center staff review and approve/reject these accounts via the "Employer Account Verification" panel.
 
 ---
 
@@ -129,3 +136,34 @@ Test 5: Verification of Staff approving a pending employer account...
 * **Forced Password Change**: Staff accounts with temporary passwords must update their credentials on first login.
 * **Cross-Origin Cookies**: Configured CORS middleware in `src/api.py` and `App.tsx` fetch requests (`credentials: 'include'`) to ensure auth cookies work correctly across different ports (`http://localhost:5173` and `http://127.0.0.1:8000`).
 * **UI Cleanups**: Hided system telemetry, audit logs, and metrics cards from standard staff, and renamed page subtitle to *"skills missing across students vs employer vacancies."*
+
+---
+
+## 🛠️ UI/UX Feedback & Type Safety Resolutions (Latest)
+* **Resolved TypeScript Compilation Error**: Fixed type mismatch on `dashboard/src/App.tsx:2869` by wrapping optional `match.id` using `match.id ?? null` in the `setShowRequestIntroModal` state dispatcher. Verified that `npm run build` runs and compiles cleanly with zero type errors.
+* **Employer Authentication & Approvals E2E Verification**: 
+  - Verified that registering an employer account with a password length of less than 8 characters returns a `400 Bad Request` validation error.
+  - Verified that newly registered employers are created with `is_active=0` and `status=pending` and are strictly blocked from logging in (returns a clear `403 Forbidden` pending approval error).
+  - Verified that simulating a Career Center approval updates the SQLite database correctly (`status=approved` and `is_active=1`) and immediately enables successful authentication.
+* **Circular Single University Branding**:
+  - Replaced the logo layout with a single, perfectly circular PDP University logo (`56px` dimensions, `borderRadius: '50%'`) centered above the title.
+  - Removed the "trusted by university career centers" label block.
+  - Retained the existing `hired.uz` title and `"from campus to hired."` tagline.
+  - Integrated robust image element error handling in the React component (`UniLogo`) to cleanly fall back to high-contrast university initials (`PDP`) if the static asset file fails to load.
+
+---
+
+## 🌐 Modern Visitor Landing Page & Interactive Showcase (Latest Update)
+We designed and implemented a stunning, high-fidelity marketing landing page served directly as the default view for unauthenticated users:
+* **Seamless State Transitions**: Added `viewMode` state toggle (`'landing' | 'auth'`) in `App.tsx` allowing visitors to explore the platform before navigating to the login card. Added "Back to Home Page" links to return to the landing page from both Sign In and Sign Up views.
+* **Unified Stakeholder Benefits Matrix**: Clearly details the specific problems solved and solutions offered for **Universities**, **Employers**, and **Students** in a responsive, beautifully styled dark/light-compatible grid layout.
+* **Interactive Talent Preview Widget**: An engaging preview component that displays sample student profiles corresponding to selected skill tags (Python, React, DevOps, QA) along with readiness scores, verified skill badges, and project highlights.
+* **Student Bot Redirection**: Featured a prominent, branded call-to-action redirecting students to their AI career companion at [@university_ai_agent_bot](https://t.me/university_ai_agent_bot).
+* **Fully Multilingual**: Integrated complete translation dictionaries for all marketing components into the English (EN) and Uzbek (UZ) UI translation catalog.
+* **Compilation Integrity**: Verified successful production build bundle compilation and pushed all finalized repository updates to GitHub.
+
+
+
+
+
+
