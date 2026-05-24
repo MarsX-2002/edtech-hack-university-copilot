@@ -1805,23 +1805,21 @@ function App() {
               </div>
 
               {/* University Partners */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
                   {dt('landingTrusted')}
                 </span>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <UniLogo src="/pdp-logo.jpg" alt="PDP" fallbackText="PDP" />
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>PDP University</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <UniLogo src="/inha-logo.jpg" alt="Inha" fallbackText="INHA" />
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>Inha University</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                    <UniLogo src="/nuu-logo.jpg" alt="NUU" fallbackText="NUU" />
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>National University</span>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', flexWrap: 'wrap', maxWidth: '800px' }}>
+                  <UniLogo src="/pdp-logo.jpg" alt="PDP University" fallbackText="PDP" />
+                  <UniLogo src="/inha-logo.jpg" alt="Inha University" fallbackText="INHA" />
+                  <UniLogo src="/nuu-logo.jpg" alt="National University of Uzbekistan" fallbackText="NUU" />
+                  <UniLogo src="/tatu-logo.jpg" alt="Tashkent University of Information Technologies" fallbackText="TUIT" />
+                  <UniLogo src="/westminster-logo.jpg" alt="Westminster International University in Tashkent" fallbackText="WIUT" />
+                  <UniLogo src="/cau-logo.jpg" alt="Central Asian University" fallbackText="CAU" />
+                  <UniLogo src="/school21-logo.jpg" alt="School 21" fallbackText="S21" />
+                  <UniLogo src="/najot-logo.jpg" alt="Najot Ta'lim" fallbackText="NAJOT" />
+                  <UniLogo src="/mohirdev-logo.jpg" alt="Mohirdev" fallbackText="MOHIR" />
+                  <UniLogo src="/mars-logo.jpg" alt="Mars IT School" fallbackText="MARS" />
                 </div>
               </div>
             </div>
